@@ -1,0 +1,6 @@
+com\meao0525\trickandcollect\item\GameItems.class
+com\meao0525\trickandcollect\event\DefaultGameEvent.class
+com\meao0525\trickandcollect\TrickandCollect.class
+com\meao0525\trickandcollect\command\GameCommand.class
+com\meao0525\trickandcollect\event\InteractVillagerEvent.class
+com\meao0525\trickandcollect\command\CommandTabCompleter.class

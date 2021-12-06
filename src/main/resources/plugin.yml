@@ -1,0 +1,16 @@
+name: TrickandCollect
+version: '${project.version}'
+main: com.meao0525.trickandcollect.TrickandCollect
+api-version: 1.17
+authors: [ meao0525 ]
+
+commands:
+  tc:
+    description:
+      TRICK AND COLLECT game command
+    usage:
+      /<command> help
+    permission:
+      default-permission
+    permission-message:
+      omae niha murida w
