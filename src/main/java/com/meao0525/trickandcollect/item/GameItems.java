@@ -2,7 +2,9 @@ package com.meao0525.trickandcollect.item;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public enum GameItems {
     STONE(Material.STONE, 32),
@@ -38,7 +40,13 @@ public enum GameItems {
 
     //ItemStack化するよ
     public ItemStack toItemStack() {
-        return new ItemStack(material, amount);
+        ItemStack item = new ItemStack(material, amount);
+        //同じの取得してもスタックしないためのNBT追加
+        ItemMeta meta = item.getItemMeta();
+        meta.setCustomModelData(1);
+        item.setItemMeta(meta);
+
+        return item;
     }
 
     //ゲッター

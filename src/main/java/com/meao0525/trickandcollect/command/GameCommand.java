@@ -28,6 +28,7 @@ public class GameCommand implements CommandExecutor {
             if (!plugin.isGame()) {
                 plugin.setGame(true);
                 sender.sendMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームはじまるお");
+                plugin.start();
             } else {
                 sender.sendMessage(ChatColor.GRAY + "ゲームは始まってるお");
             }
@@ -38,6 +39,7 @@ public class GameCommand implements CommandExecutor {
             if (plugin.isGame()) {
                 plugin.setGame(false);
                 sender.sendMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "おわるお");
+                plugin.stop();
             } else {
                 sender.sendMessage(ChatColor.GRAY + "まだ何も始まっていないようだ...");
             }

@@ -4,14 +4,26 @@ import com.meao0525.trickandcollect.command.CommandTabCompleter;
 import com.meao0525.trickandcollect.command.GameCommand;
 import com.meao0525.trickandcollect.event.DefaultGameEvent;
 import com.meao0525.trickandcollect.event.InteractVillagerEvent;
+import com.meao0525.trickandcollect.item.GameItems;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.ArrayList;
 
 public final class TrickandCollect extends JavaPlugin {
     // ゲームフラグ
     private boolean game = false;
+
+    //プレイヤーリスト
+    private ArrayList<Player> tcPlayers = new ArrayList<>();
 
     // 初期地点
     private Location spawnPoint;
@@ -30,8 +42,6 @@ public final class TrickandCollect extends JavaPlugin {
         getCommand("tc").setExecutor(new GameCommand(this));
         //タブ保管できるようにする
         getCommand("tc").setTabCompleter(new CommandTabCompleter());
-        //イベント登録
-        registerEvents();
 
         //初期地点を設定
         spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
@@ -46,24 +56,55 @@ public final class TrickandCollect extends JavaPlugin {
     public void registerEvents() {
         getServer().getPluginManager().registerEvents(new DefaultGameEvent(this), this);
         getServer().getPluginManager().registerEvents(new InteractVillagerEvent(this), this);
-
     }
 
     public void start() {
         // 始める
-        //TODO: 初期地点を設定する
-        //TODO: 目標アイテム決める
-        //TODO: 目標アイテム設置する
-        //TODO: チーム振り分け
-        //TODO: インベントリ制限
-        //TODO: ツール・アイテムを渡す
-        //TODO: 全員を同じ場所に飛ばす
+        game = true;
+        //プレイヤーリスト作成
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!p.getGameMode().equals(GameMode.CREATIVE)) {
+                tcPlayers.add(p);
+            }
+        }
+
+        for (Player p : tcPlayers) {
+            //TODO: 初期地点を設定する
+            //TODO: 目標アイテム設置する
+            //TODO: チーム振り分け
+            //インベントリ
+            setGameInventory(p);
+
+            //TODO: 全員を同じ場所に飛ばす
+        }
+
         //TODO: タイマースタート
+
+        //イベント登録
+        registerEvents();
 
     }
 
     public void stop() {
         // 終える
+        game = false;
+    }
+
+    //ゲーム開始時のインベントリ作るやつ
+    void setGameInventory(Player player) {
+        Inventory inv = player.getInventory();
+        //まず空っぽ
+        inv.clear();
+        //TODO: ツール渡す
+
+        //目標アイテム表示
+        for (int i = 0; i < GameItems.values().length; i++) {
+            inv.setItem(i+9, GameItems.values()[i].toItemStack());
+        }
+        //残り枠をバリアブロックにする
+        for (int i = 27; i < 36; i++) {
+            inv.setItem(i, new ItemStack(Material.BARRIER));
+        }
     }
 
     //げったんせったん

@@ -34,13 +34,10 @@ public class InteractVillagerEvent implements Listener {
         player.openInventory(createrInvetory());
     }
 
+    //表示用目標インベントリ作成
     public Inventory createrInvetory() {
-        //表示用目標インベントリ作成
         Inventory passInv = Bukkit.createInventory(null, 18, "目標アイテム");
-        //アイテム追加
-        for (int i=0; i < GameItems.values().length; i++) {
-            passInv.setItem(i, GameItems.values()[i].toItemStack());
-        }
+        //TODO: 収集状況を表示
 
         return passInv;
     }
