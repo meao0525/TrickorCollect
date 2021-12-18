@@ -5,11 +5,10 @@ import com.meao0525.trickandcollect.command.GameCommand;
 import com.meao0525.trickandcollect.event.DefaultGameEvent;
 import com.meao0525.trickandcollect.event.InteractVillagerEvent;
 import com.meao0525.trickandcollect.item.GameItems;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -24,9 +23,13 @@ public final class TrickandCollect extends JavaPlugin {
 
     //プレイヤーリスト
     private ArrayList<Player> tcPlayers = new ArrayList<>();
+    //取り立て屋
+    Villager collector;
 
     // 初期地点
     private Location spawnPoint;
+    //収集進捗格納用
+    Inventory collects;
     //TODO: アイテムリスト
 
     //TODO: 初期地点に戻させるアイテム
@@ -43,9 +46,6 @@ public final class TrickandCollect extends JavaPlugin {
         //タブ保管できるようにする
         getCommand("tc").setTabCompleter(new CommandTabCompleter());
 
-        //初期地点を設定
-        spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
-
     }
 
     @Override
@@ -61,12 +61,24 @@ public final class TrickandCollect extends JavaPlugin {
     public void start() {
         // 始める
         game = true;
+        //初期地点を設定
+        spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
         //プレイヤーリスト作成
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (!p.getGameMode().equals(GameMode.CREATIVE)) {
                 tcPlayers.add(p);
             }
         }
+
+        /***村人の作り方***/
+        World world = Bukkit.getWorlds().get(0);
+        //今回の取り立て屋
+        collector = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
+        collector.setAI(false);
+        collector.setCustomName("取り立て屋");
+        collector.setCustomNameVisible(true);
+        //インベントリを与える
+        collects = Bukkit.createInventory(collector, 18, "目標アイテム");
 
         for (Player p : tcPlayers) {
             //TODO: 初期地点を設定する
@@ -88,6 +100,13 @@ public final class TrickandCollect extends JavaPlugin {
     public void stop() {
         // 終える
         game = false;
+        //村人は用済み
+        collector.damage(8000);
+        //インベントリ空にする
+        for (Player p : tcPlayers) {
+            //インベントリを殻にする
+            p.getInventory().clear();
+        }
     }
 
     //ゲーム開始時のインベントリ作るやつ
@@ -123,5 +142,13 @@ public final class TrickandCollect extends JavaPlugin {
 
     public void setSpawnPoint(Location spawnPoint) {
         this.spawnPoint = spawnPoint;
+    }
+
+    public Villager getCollector() {
+        return collector;
+    }
+
+    public Inventory getCollects() {
+        return collects;
     }
 }

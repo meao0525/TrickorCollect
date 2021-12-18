@@ -1,8 +1,10 @@
 package com.meao0525.trickandcollect.event;
 
 import com.meao0525.trickandcollect.TrickandCollect;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -30,6 +32,18 @@ public class DefaultGameEvent implements Listener {
         }
 
         //TODO: 目標インベントリでも駄目ですよ
+    }
+
+    @EventHandler
+    public void CollectorDamageEventListener(EntityDamageEvent e) {
+        //ダメージを受けたのは取り立て屋ですか？
+        if (plugin.isGame() && (e.getEntity() instanceof Villager)) {
+            Villager villager = (Villager) e.getEntity();
+            if (villager.getName().equalsIgnoreCase("取り立て屋")) {
+                //取り立て屋は不死身です
+                e.setCancelled(true);
+            }
+        }
     }
 
 }
