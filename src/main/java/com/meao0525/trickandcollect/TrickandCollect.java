@@ -6,6 +6,10 @@ import com.meao0525.trickandcollect.event.DefaultGameEvent;
 import com.meao0525.trickandcollect.event.InteractVillagerEvent;
 import com.meao0525.trickandcollect.item.GameItems;
 import org.bukkit.*;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarFlag;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -14,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 
@@ -30,12 +35,19 @@ public final class TrickandCollect extends JavaPlugin {
     private Location spawnPoint;
     //収集進捗格納用
     Inventory collects;
-    //TODO: アイテムリスト
+
+    //タイマー
+    private int time = 20; //分
+    GameTimer timer;
+    private BossBar timerBar;
 
     //TODO: 初期地点に戻させるアイテム
     //TODO: 盗めるアイテム
-
     //TODO: ゲーム内イベントありかも
+    /*
+     *ウーパールーパー捕まえたら足早くなる
+     *
+     */
 
     @Override
     public void onEnable() {
@@ -45,7 +57,8 @@ public final class TrickandCollect extends JavaPlugin {
         getCommand("tc").setExecutor(new GameCommand(this));
         //タブ保管できるようにする
         getCommand("tc").setTabCompleter(new CommandTabCompleter());
-
+        //タイマーバー作成
+        timerBar = Bukkit.createBossBar("残り時間:", BarColor.GREEN, BarStyle.SOLID);
     }
 
     @Override
@@ -88,13 +101,21 @@ public final class TrickandCollect extends JavaPlugin {
             setGameInventory(p);
 
             //TODO: 全員を同じ場所に飛ばす
+            //タイマー表示
+            timerBar.addPlayer(p);
+            //合図は大事
+            p.sendTitle("", ChatColor.GOLD + "--- start! ---", 10, 70, 20);
+            Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームを開始します");
+            p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_SHOOT, 3.0F, 3.0F);
         }
 
         //TODO: タイマースタート
 
         //イベント登録
         registerEvents();
-
+        //タイマースタート
+        timer = new GameTimer(time);
+        timer.runTaskTimer(this, 0, 20);
     }
 
     public void stop() {
@@ -102,10 +123,18 @@ public final class TrickandCollect extends JavaPlugin {
         game = false;
         //村人は用済み
         collector.damage(8000);
+        //タイマー止める
+        timer.cancel();
         //インベントリ空にする
         for (Player p : tcPlayers) {
             //インベントリを殻にする
             p.getInventory().clear();
+            //タイマー非表示
+            timerBar.removePlayer(p);
+            //エフェクト
+            p.sendTitle("", ChatColor.GOLD + "--- 終了---", 0, 60, 20);
+            Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームが終わりました");
+            p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.3F, 0.5F);
         }
     }
 
@@ -150,5 +179,43 @@ public final class TrickandCollect extends JavaPlugin {
 
     public Inventory getCollects() {
         return collects;
+    }
+
+    //タイマー用内部クラス
+    private class GameTimer extends BukkitRunnable {
+
+        private int time;
+        private double maxTime;
+
+
+        GameTimer(int time) {
+            this.maxTime = time * 60;
+            this.time = time * 60;
+        }
+
+        @Override
+        public void run() {
+            if (time > 0) {
+                timerBar.setTitle("残り時間:" + time/60 + "m " + time%60 + "s");
+                timerBar.setProgress(time/maxTime);
+                //タイマーバーの色を変えるよ
+                if (time/maxTime < 0.5) {
+                    timerBar.setColor(BarColor.YELLOW);
+                } else if (time/maxTime < 0.2) {
+                    timerBar.setColor(BarColor.RED);
+                }
+                //最後のカウントダウン
+                if (time < 6) {
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_PLACE, 0.3F, 0.5F);
+                    }
+                }
+            } else {
+                //ゲーム終了
+                stop();
+            }
+            //1秒減らす
+            time--;
+        }
     }
 }
