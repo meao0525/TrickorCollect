@@ -3,6 +3,7 @@ package com.meao0525.trickandcollect.event;
 import com.meao0525.trickandcollect.TrickandCollect;
 import com.meao0525.trickandcollect.item.GameItems;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -40,6 +41,8 @@ public class InteractVillagerEvent implements Listener {
                 int dif = collectItem(i.getIndex(), i.getAmount(), inMainHand);
                 //回収しまーす
                 player.getInventory().getItemInMainHand().setAmount(dif);
+                //ゲーム終わったかな？？？？
+                check();
                 return;
             }
         }
@@ -58,17 +61,9 @@ public class InteractVillagerEvent implements Listener {
         newAmount = item.getAmount();
         if (collects.contains(item.getType())) {
             //同じアイテムすでに納品済み
-//            int sum = collects.getItem(index).getAmount() + item.getAmount();
-//            if (amount - sum < 0) {
-//                //あふれてるよ
-//                collects.setItem(index, new ItemStack(item.getType(), amount));
-//            } else {
-//                collects.addItem(item);
-//            }
             currentAmount = collects.getItem(index).getAmount();
         } else {
             //そのアイテムは君が最初の納品者だ
-//            collects.setItem(index, item);
             currentAmount = 0;
         }
 
@@ -82,6 +77,26 @@ public class InteractVillagerEvent implements Listener {
             collects.setItem(index, new ItemStack(item.getType(), currentAmount+newAmount));
             //全部もらいまーす
             return 0;
+        }
+    }
+
+    public void check() {
+        //ゲーム終わってたりしないよね？
+        int checkcount = 0;
+        //現在の納品状況
+        Inventory collects = plugin.getCollects();
+        //必要数たりてるかちぇえええええっく
+        for (GameItems i : GameItems.values()) {
+            ItemStack current = collects.getItem(i.getIndex());
+            if (current != null && i.getAmount() == current.getAmount()) {
+                checkcount++;
+            }
+        }
+        //半分以上が必要数に足りている
+        Bukkit.broadcastMessage("現在数" + checkcount);
+        if (checkcount > 8) {
+            Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームクリア！");
+            plugin.stop();
         }
     }
 }

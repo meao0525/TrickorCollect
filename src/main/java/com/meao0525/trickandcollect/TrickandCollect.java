@@ -73,7 +73,11 @@ public final class TrickandCollect extends JavaPlugin {
 
     public void start() {
         // 始める
-        game = true;
+        if (game == true) {
+            return;
+        } else {
+            game = true;
+        }
         //初期地点を設定
         spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
         //プレイヤーリスト作成
@@ -108,9 +112,6 @@ public final class TrickandCollect extends JavaPlugin {
             Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームを開始します");
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_SHOOT, 3.0F, 3.0F);
         }
-
-        //TODO: タイマースタート
-
         //イベント登録
         registerEvents();
         //タイマースタート
@@ -136,6 +137,8 @@ public final class TrickandCollect extends JavaPlugin {
             Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームが終わりました");
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.3F, 0.5F);
         }
+        //プレイヤーリストを空にする
+        tcPlayers.clear();
     }
 
     //ゲーム開始時のインベントリ作るやつ
@@ -186,7 +189,6 @@ public final class TrickandCollect extends JavaPlugin {
 
         private int time;
         private double maxTime;
-
 
         GameTimer(int time) {
             this.maxTime = time * 60;
