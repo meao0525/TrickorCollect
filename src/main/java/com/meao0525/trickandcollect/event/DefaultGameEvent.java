@@ -1,14 +1,13 @@
 package com.meao0525.trickandcollect.event;
 
 import com.meao0525.trickandcollect.TrickandCollect;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
 
 public class DefaultGameEvent implements Listener {
 

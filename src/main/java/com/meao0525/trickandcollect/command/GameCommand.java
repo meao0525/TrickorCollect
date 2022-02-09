@@ -42,6 +42,11 @@ public class GameCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.GRAY + "まだ何も始まっていないようだ...");
             }
 
+        } else if (args[0].equalsIgnoreCase("traitor")) {
+            //裏切者の人数を設定する
+            int num = args[1].isEmpty() ? 1 : Integer.parseInt(args[1]);
+            plugin.setTraitorNum(num);
+            plugin.reloadInfo();
         }
 
         return true;

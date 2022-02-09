@@ -4,10 +4,10 @@ import com.meao0525.trickandcollect.command.CommandTabCompleter;
 import com.meao0525.trickandcollect.command.GameCommand;
 import com.meao0525.trickandcollect.event.DefaultGameEvent;
 import com.meao0525.trickandcollect.event.InteractVillagerEvent;
+import com.meao0525.trickandcollect.event.PlayerRespawnEvent;
 import com.meao0525.trickandcollect.item.GameItems;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.EntityType;
@@ -15,12 +15,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public final class TrickandCollect extends JavaPlugin {
     // ゲームフラグ
@@ -28,6 +29,8 @@ public final class TrickandCollect extends JavaPlugin {
 
     //プレイヤーリスト
     private ArrayList<Player> tcPlayers = new ArrayList<>();
+    //人狼人数
+    private int traitorNum = 1;
     //取り立て屋
     Villager collector;
 
@@ -40,6 +43,11 @@ public final class TrickandCollect extends JavaPlugin {
     private int time = 20; //分
     GameTimer timer;
     private BossBar timerBar;
+
+    //スコアボード
+    private ScoreboardManager manager;
+    private Scoreboard board; //ゲーム用（つかわんかも）
+    private Scoreboard info; //設定用
 
     //TODO: 初期地点に戻させるアイテム
     //TODO: 盗めるアイテム
@@ -57,8 +65,15 @@ public final class TrickandCollect extends JavaPlugin {
         getCommand("tc").setExecutor(new GameCommand(this));
         //タブ保管できるようにする
         getCommand("tc").setTabCompleter(new CommandTabCompleter());
+        //初期地点を設定
+        spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
         //タイマーバー作成
         timerBar = Bukkit.createBossBar("残り時間:", BarColor.GREEN, BarStyle.SOLID);
+        //スコアボード設定
+        manager = Bukkit.getScoreboardManager();
+        board = manager.getNewScoreboard();
+        info = manager.getNewScoreboard();
+        reloadInfo();
     }
 
     @Override
@@ -69,6 +84,7 @@ public final class TrickandCollect extends JavaPlugin {
     public void registerEvents() {
         getServer().getPluginManager().registerEvents(new DefaultGameEvent(this), this);
         getServer().getPluginManager().registerEvents(new InteractVillagerEvent(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerRespawnEvent(this), this);
     }
 
     public void start() {
@@ -78,14 +94,15 @@ public final class TrickandCollect extends JavaPlugin {
         } else {
             game = true;
         }
-        //初期地点を設定
-        spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
         //プレイヤーリスト作成
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (!p.getGameMode().equals(GameMode.CREATIVE)) {
                 tcPlayers.add(p);
             }
         }
+
+        //初期地点を設定
+        spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
 
         /***村人の作り方***/
         World world = Bukkit.getWorlds().get(0);
@@ -99,12 +116,13 @@ public final class TrickandCollect extends JavaPlugin {
 
         for (Player p : tcPlayers) {
             //TODO: 初期地点を設定する
-            //TODO: 目標アイテム設置する
             //TODO: チーム振り分け
             //インベントリ
             setGameInventory(p);
 
             //TODO: 全員を同じ場所に飛ばす
+            //スコアボード変更
+            p.setScoreboard(board);
             //タイマー表示
             timerBar.addPlayer(p);
             //合図は大事
@@ -130,6 +148,8 @@ public final class TrickandCollect extends JavaPlugin {
         for (Player p : tcPlayers) {
             //インベントリを殻にする
             p.getInventory().clear();
+            //スコアボード変更
+            p.setScoreboard(info);
             //タイマー非表示
             timerBar.removePlayer(p);
             //エフェクト
@@ -146,7 +166,6 @@ public final class TrickandCollect extends JavaPlugin {
         Inventory inv = player.getInventory();
         //まず空っぽ
         inv.clear();
-        //TODO: ツール渡す
 
         //目標アイテム表示
         for (int i = 0; i < GameItems.values().length; i++) {
@@ -156,6 +175,46 @@ public final class TrickandCollect extends JavaPlugin {
         for (int i = 27; i < 36; i++) {
             inv.setItem(i, new ItemStack(Material.BARRIER));
         }
+
+        //ツール渡す
+        for (ItemStack item : createToolsSet()) {
+            inv.addItem(item);
+        }
+    }
+
+    HashSet<ItemStack> createToolsSet() {
+        HashSet<ItemStack> tools = new HashSet<>();
+        //ツールセット作成
+        tools.add(new ItemStack(Material.IRON_SWORD));
+        tools.add(new ItemStack(Material.IRON_PICKAXE));
+        tools.add(new ItemStack(Material.IRON_AXE));
+        tools.add(new ItemStack(Material.IRON_SHOVEL));
+        //食い物やるよ
+        tools.add(new ItemStack(Material.COOKED_COD, 64));
+
+        return tools;
+    }
+
+    public void reloadInfo() {
+        //基本情報
+        Objective obj = info.getObjective("info");
+        //一度消す
+        if (obj != null) {
+            obj.unregister();
+        }
+        //再登録
+        obj = info.registerNewObjective("info", "dummy", ChatColor.GOLD + "=====[Trick and Collect]=====");
+        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        int i = 0;
+        //Traitorの数
+        Score score = obj.getScore("Traitorの数: " + ChatColor.AQUA + traitorNum);
+        score.setScore(i--);
+
+//        //全員に表示
+//        for (Player p : Bukkit.getOnlinePlayers()) {
+//            p.setScoreboard(info);
+//        }
     }
 
     //げったんせったん
@@ -182,6 +241,26 @@ public final class TrickandCollect extends JavaPlugin {
 
     public Inventory getCollects() {
         return collects;
+    }
+
+    public int getTraitorNum() {
+        return traitorNum;
+    }
+
+    public void setTraitorNum(int traitorNum) {
+        this.traitorNum = traitorNum;
+    }
+
+    public Scoreboard getInfo() {
+        return info;
+    }
+
+    public Scoreboard getBoard() {
+        return board;
+    }
+
+    public ArrayList<Player> getTcPlayers() {
+        return tcPlayers;
     }
 
     //タイマー用内部クラス
