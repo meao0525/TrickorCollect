@@ -49,8 +49,6 @@ public final class TrickandCollect extends JavaPlugin {
     private Scoreboard board; //ゲーム用（つかわんかも）
     private Scoreboard info; //設定用
 
-    //TODO: 初期地点に戻させるアイテム
-    //TODO: 盗めるアイテム
     //TODO: ゲーム内イベントありかも
     /*
      *ウーパールーパー捕まえたら足早くなる
