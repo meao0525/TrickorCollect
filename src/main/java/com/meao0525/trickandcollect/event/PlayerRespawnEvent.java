@@ -4,6 +4,9 @@ import com.meao0525.trickandcollect.TrickandCollect;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -59,7 +62,7 @@ public class PlayerRespawnEvent implements Listener {
     //Thread用の内部クラス
     private class RespawnThread extends BukkitRunnable {
         private Player player;
-        private int count = 5;
+        private int count = 8;
 
         private RespawnThread(Player player) {
             this.player = player;
@@ -70,8 +73,15 @@ public class PlayerRespawnEvent implements Listener {
         public void run() {
             //respawn中の人リストにいない
             if (!respawnPlayers.containsKey(player)) { this.cancel(); }
-            //5秒経った
-            if (count <= 0) {
+
+            if (count > 5) { //最初の3秒
+                count--;
+            } else if (count > 0) { //カウント5秒
+                //経過秒数増やすメッセージ
+                player.sendMessage("リスポーンまで残り " + ChatColor.AQUA + count-- + ChatColor.RESET + " 秒");
+                //効果音
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_SNARE, 5.0F, 5.0F);
+            } else { //時は満ちた
                 //帰らせる
                 player.teleport(plugin.getSpawnPoint());
                 //効果音
@@ -80,11 +90,6 @@ public class PlayerRespawnEvent implements Listener {
                 respawnPlayers.remove(player);
                 //止める
                 this.cancel();
-            } else {
-                //経過秒数増やすメッセージ
-                player.sendMessage("リスポーンまで残り " + ChatColor.AQUA + count-- + ChatColor.RESET + " 秒");
-                //効果音
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_SNARE, 5.0F, 5.0F);
             }
         }
     }
