@@ -21,7 +21,8 @@ public class GameCommand implements CommandExecutor {
             //ヘルプコマンド
             sender.sendMessage(ChatColor.GOLD + "==========[Trick and Collect]===========\n" + ChatColor.RESET +
                     "/onigo start --- ゲームスタート\n" +
-                    "/onigo stop --- ゲームを強制終了");
+                    "/onigo stop --- ゲームを強制終了\n" +
+                    "/onito traitor <int> --- 裏切者の人数設定");
 
         } else if (args[0].equalsIgnoreCase("start")) {
             //ゲーム開始コマンド
@@ -48,6 +49,9 @@ public class GameCommand implements CommandExecutor {
             plugin.setTraitorNum(num);
             plugin.reloadInfo();
         }
+
+        //TODO: 初期地点変える
+        //TODO: info見えるようにする
 
         return true;
     }

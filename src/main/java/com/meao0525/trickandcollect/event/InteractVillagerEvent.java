@@ -27,7 +27,8 @@ public class InteractVillagerEvent implements Listener {
     @EventHandler
     public void InteractVillagerEventListener(PlayerInteractEntityEvent e) {
         //村人をクリックした
-        if (!(e.getRightClicked().getCustomName().equalsIgnoreCase("取り立て屋"))) { return; }
+        String entityName = e.getRightClicked().getCustomName();
+        if (entityName == null || !entityName.equalsIgnoreCase("取り立て屋")) { return; }
         //デフォのイベントキャンセル
         e.setCancelled(true);
 

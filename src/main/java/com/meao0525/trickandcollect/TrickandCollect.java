@@ -5,6 +5,7 @@ import com.meao0525.trickandcollect.command.GameCommand;
 import com.meao0525.trickandcollect.event.DefaultGameEvent;
 import com.meao0525.trickandcollect.event.InteractVillagerEvent;
 import com.meao0525.trickandcollect.event.PlayerRespawnEvent;
+import com.meao0525.trickandcollect.event.PlayerStealItemEvent;
 import com.meao0525.trickandcollect.item.GameItems;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
@@ -20,6 +21,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -46,8 +48,11 @@ public final class TrickandCollect extends JavaPlugin {
 
     //スコアボード
     private ScoreboardManager manager;
-    private Scoreboard board; //ゲーム用（つかわんかも）
     private Scoreboard info; //設定用
+
+    //チーム
+    private Team collectorTeam;
+    private Team traitorTeam;
 
     //TODO: ゲーム内イベントありかも
     /*
@@ -69,9 +74,10 @@ public final class TrickandCollect extends JavaPlugin {
         timerBar = Bukkit.createBossBar("残り時間:", BarColor.GREEN, BarStyle.SOLID);
         //スコアボード設定
         manager = Bukkit.getScoreboardManager();
-        board = manager.getNewScoreboard();
         info = manager.getNewScoreboard();
         reloadInfo();
+        //チーム登録
+        registerTeam(manager.getMainScoreboard());
     }
 
     @Override
@@ -83,6 +89,7 @@ public final class TrickandCollect extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new DefaultGameEvent(this), this);
         getServer().getPluginManager().registerEvents(new InteractVillagerEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnEvent(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerStealItemEvent(this), this);
     }
 
     public void start() {
@@ -112,22 +119,37 @@ public final class TrickandCollect extends JavaPlugin {
         //インベントリを与える
         collects = Bukkit.createInventory(collector, 18, "目標アイテム");
 
+        //チーム振り分け
+        Collections.shuffle(tcPlayers);
+        int tcount = traitorNum;
+
         for (Player p : tcPlayers) {
-            //TODO: 初期地点を設定する
-            //TODO: チーム振り分け
+            //初期地点を設定する
+            p.setBedSpawnLocation(spawnPoint, true);
+            //チーム振り分け
+            if (tcount > 0) {
+                //まだ裏切者を作れる
+                traitorTeam.addEntry(p.getDisplayName());
+                tcount--;
+            } else {
+                //残りは集める人
+                collectorTeam.addEntry(p.getDisplayName());
+            }
             //インベントリ
             setGameInventory(p);
 
-            //TODO: 全員を同じ場所に飛ばす
+            //全員を同じ場所に飛ばす
+            p.teleport(spawnPoint);
             //スコアボード変更
-            p.setScoreboard(board);
+            p.setScoreboard(manager.getMainScoreboard());
             //タイマー表示
             timerBar.addPlayer(p);
             //合図は大事
             p.sendTitle("", ChatColor.GOLD + "--- start! ---", 10, 70, 20);
-            Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームを開始します");
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_SHOOT, 3.0F, 3.0F);
         }
+
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームを開始します");
         //イベント登録
         registerEvents();
         //タイマースタート
@@ -144,6 +166,12 @@ public final class TrickandCollect extends JavaPlugin {
         timer.cancel();
         //インベントリ空にする
         for (Player p : tcPlayers) {
+            //チーム解散
+            if (collectorTeam.hasEntry(p.getDisplayName())) {
+                collectorTeam.removeEntry(p.getDisplayName());
+            } else {
+                traitorTeam.removeEntry(p.getDisplayName());
+            }
             //インベントリを殻にする
             p.getInventory().clear();
             //スコアボード変更
@@ -152,9 +180,10 @@ public final class TrickandCollect extends JavaPlugin {
             timerBar.removePlayer(p);
             //エフェクト
             p.sendTitle("", ChatColor.GOLD + "--- 終了---", 0, 60, 20);
-            Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームが終わりました");
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.3F, 0.5F);
         }
+
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームが終わりました");
         //プレイヤーリストを空にする
         tcPlayers.clear();
     }
@@ -215,6 +244,25 @@ public final class TrickandCollect extends JavaPlugin {
 //        }
     }
 
+    public void registerTeam(Scoreboard board) {
+        //チーム設定
+        collectorTeam = board.getTeam("collectorteam");
+        traitorTeam = board.getTeam("traitorteam");
+        //なかったら作る
+        if (collectorTeam == null) {
+            collectorTeam = board.registerNewTeam("collectorteam");
+            collectorTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+            collectorTeam.setAllowFriendlyFire(true);
+            collectorTeam.setColor(ChatColor.BLUE);
+        }
+        if (traitorTeam == null) {
+            traitorTeam = board.registerNewTeam("traitorteam");
+            traitorTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+            traitorTeam.setAllowFriendlyFire(true);
+            traitorTeam.setColor(ChatColor.RED);
+        }
+    }
+
     //げったんせったん
 
     public boolean isGame() {
@@ -253,12 +301,16 @@ public final class TrickandCollect extends JavaPlugin {
         return info;
     }
 
-    public Scoreboard getBoard() {
-        return board;
-    }
-
     public ArrayList<Player> getTcPlayers() {
         return tcPlayers;
+    }
+
+    public Team getCollectorTeam() {
+        return collectorTeam;
+    }
+
+    public Team getTraitorTeam() {
+        return traitorTeam;
     }
 
     //タイマー用内部クラス

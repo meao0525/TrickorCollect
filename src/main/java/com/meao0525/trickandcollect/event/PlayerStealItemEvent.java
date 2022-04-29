@@ -29,7 +29,8 @@ public class PlayerStealItemEvent implements Listener {
                 Player target = (Player)e.getRightClicked();
                 ItemStack itemInMain = player.getInventory().getItemInMainHand();
 
-                //TODO: 人狼チームか
+                //人狼チームか
+                if (!pluin.getTraitorTeam().hasEntry(player.getDisplayName())) { return; }
                 //鉄権を持ってる人狼ならアイテムを盗める
                 if (itemInMain.getType().equals(Material.IRON_SWORD)) {
                     while (true) {
@@ -42,13 +43,16 @@ public class PlayerStealItemEvent implements Listener {
                         //ホットバーかオフハンドのアイテム取得
                         ItemStack item = target.getInventory().getItem(index);
                         //nullじゃなくて盗めるアイテムかな？
-                        if (item != null && !checkCanStealItem(item.getType())) {
+                        if (item != null && checkCanStealItem(item.getType())) {
                             //targetの餅数一つ減らす
                             target.getInventory().setItem(index, new ItemStack(item.getType(), item.getAmount()-1));
                             //盗んだ方に一つ渡す
                             player.getInventory().addItem(new ItemStack(item.getType(), 1));
+                            player.sendMessage(item.getItemMeta().getDisplayName() + " を盗みました");
                             break;
                         }
+                        //TODO: クールダウンを付ける
+                        //TODO: 盗めるものがない時に無限ループなる
                     }
                 }
             }

@@ -30,7 +30,10 @@ public class DefaultGameEvent implements Listener {
             e.setCancelled(true);
         }
 
-        //TODO: 目標インベントリでも駄目ですよ
+        //目標インベントリでも駄目ですよ
+        if (e.getClickedInventory().getHolder().equals(plugin.getCollector())) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
