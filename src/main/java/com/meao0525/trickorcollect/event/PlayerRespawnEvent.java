@@ -1,12 +1,9 @@
-package com.meao0525.trickandcollect.event;
+package com.meao0525.trickorcollect.event;
 
-import com.meao0525.trickandcollect.TrickandCollect;
+import com.meao0525.trickorcollect.TrickorCollect;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,10 +15,10 @@ import java.util.HashMap;
 
 public class PlayerRespawnEvent implements Listener {
 
-    private TrickandCollect plugin;
+    private TrickorCollect plugin;
     public static HashMap<Player, RespawnThread> respawnPlayers = new HashMap<>();
 
-    public PlayerRespawnEvent(TrickandCollect plugin) { this.plugin = plugin; }
+    public PlayerRespawnEvent(TrickorCollect plugin) { this.plugin = plugin; }
 
     @EventHandler
     public void PlayerSneakEventListener(PlayerToggleSneakEvent e) {

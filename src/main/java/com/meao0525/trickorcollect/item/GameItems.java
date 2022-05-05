@@ -1,8 +1,6 @@
-package com.meao0525.trickandcollect.item;
+package com.meao0525.trickorcollect.item;
 
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 

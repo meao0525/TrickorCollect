@@ -1,13 +1,13 @@
-name: TrickandCollect
+name: TrickorCollect
 version: '${project.version}'
-main: com.meao0525.trickandcollect.TrickandCollect
+main: com.meao0525.trickorcollect.TrickorCollect
 api-version: 1.18
 authors: [ meao0525 ]
 
 commands:
   tc:
     description:
-      TRICK AND COLLECT game command
+      TRICK OR COLLECT game command
     usage:
       /<command> help
     permission:

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TrickandCollect.iml" filepath="$PROJECT_DIR$/TrickandCollect.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TrickorCollect.iml" filepath="$PROJECT_DIR$/TrickorCollect.iml" />
     </modules>
   </component>
 </project>

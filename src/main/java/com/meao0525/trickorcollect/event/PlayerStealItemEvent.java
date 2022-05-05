@@ -1,6 +1,6 @@
-package com.meao0525.trickandcollect.event;
+package com.meao0525.trickorcollect.event;
 
-import com.meao0525.trickandcollect.TrickandCollect;
+import com.meao0525.trickorcollect.TrickorCollect;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -11,15 +11,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.*;
 
 public class PlayerStealItemEvent implements Listener {
 
-    private TrickandCollect pluin;
+    private TrickorCollect pluin;
 
-    public PlayerStealItemEvent(TrickandCollect pluin) {
+    public PlayerStealItemEvent(TrickorCollect pluin) {
         this.pluin = pluin;
     }
 

@@ -1,12 +1,12 @@
-package com.meao0525.trickandcollect;
+package com.meao0525.trickorcollect;
 
-import com.meao0525.trickandcollect.command.CommandTabCompleter;
-import com.meao0525.trickandcollect.command.GameCommand;
-import com.meao0525.trickandcollect.event.DefaultGameEvent;
-import com.meao0525.trickandcollect.event.InteractVillagerEvent;
-import com.meao0525.trickandcollect.event.PlayerRespawnEvent;
-import com.meao0525.trickandcollect.event.PlayerStealItemEvent;
-import com.meao0525.trickandcollect.item.GameItems;
+import com.meao0525.trickorcollect.command.CommandTabCompleter;
+import com.meao0525.trickorcollect.command.GameCommand;
+import com.meao0525.trickorcollect.event.DefaultGameEvent;
+import com.meao0525.trickorcollect.event.InteractVillagerEvent;
+import com.meao0525.trickorcollect.event.PlayerRespawnEvent;
+import com.meao0525.trickorcollect.event.PlayerStealItemEvent;
+import com.meao0525.trickorcollect.item.GameItems;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -17,15 +17,16 @@ import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 
-public final class TrickandCollect extends JavaPlugin {
+public final class TrickorCollect extends JavaPlugin {
     // ゲームフラグ
     private boolean game = false;
 
@@ -49,6 +50,7 @@ public final class TrickandCollect extends JavaPlugin {
     //スコアボード
     private ScoreboardManager manager;
     private Scoreboard info; //設定用
+    private boolean infoFlag = false;
 
     //チーム
     private Team collectorTeam;
@@ -109,16 +111,8 @@ public final class TrickandCollect extends JavaPlugin {
         //初期地点を設定
         spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
 
-        /***村人の作り方***/
-        World world = Bukkit.getWorlds().get(0);
-        //今回の取り立て屋
-        collector = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
-        collector.setAI(false);
-        collector.setCustomName("取り立て屋");
-        collector.setCustomNameVisible(true);
-        //インベントリを与える
-        collects = Bukkit.createInventory(collector, 18, "目標アイテム");
-        //TODO: 発光させる
+        //村人召喚
+        summonCollector();
 
         //チーム振り分け
         Collections.shuffle(tcPlayers);
@@ -150,7 +144,7 @@ public final class TrickandCollect extends JavaPlugin {
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_SHOOT, 3.0F, 3.0F);
         }
 
-        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームを開始します");
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームを開始します");
         //イベント登録
         registerEvents();
         //タイマースタート
@@ -184,9 +178,23 @@ public final class TrickandCollect extends JavaPlugin {
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.3F, 0.5F);
         }
 
-        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick and Collect]" + ChatColor.RESET + "ゲームが終わりました");
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームが終わりました");
         //プレイヤーリストを空にする
         tcPlayers.clear();
+    }
+
+    //コレクター（村人）作る
+    void summonCollector() {
+        /***村人の作り方***/
+        World world = Bukkit.getWorlds().get(0);
+        //今回の取り立て屋
+        collector = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
+        collector.setAI(false);
+        collector.setCustomName("取り立て屋");
+        collector.setCustomNameVisible(true);
+        collector.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
+        //インベントリを与える
+        collects = Bukkit.createInventory(collector, 18, "目標アイテム");
     }
 
     //ゲーム開始時のインベントリ作るやつ
@@ -223,6 +231,23 @@ public final class TrickandCollect extends JavaPlugin {
         return tools;
     }
 
+    public void toggleInfo() {
+        infoFlag = !infoFlag;
+        //一応リロード
+        reloadInfo();
+        //スコアボード切り替え
+        Scoreboard board;
+        if (infoFlag) {
+            board = info;
+        } else {
+            board = manager.getMainScoreboard();
+        }
+        //全員に表示
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.setScoreboard(board);
+        }
+    }
+
     public void reloadInfo() {
         //基本情報
         Objective obj = info.getObjective("info");
@@ -231,18 +256,16 @@ public final class TrickandCollect extends JavaPlugin {
             obj.unregister();
         }
         //再登録
-        obj = info.registerNewObjective("info", "dummy", ChatColor.GOLD + "=====[Trick and Collect]=====");
+        obj = info.registerNewObjective("info", "dummy", ChatColor.GOLD + "[Trick or Collect]");
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         int i = 0;
         //Traitorの数
-        Score score = obj.getScore("Traitorの数: " + ChatColor.AQUA + traitorNum);
+        Score score = obj.getScore("Traitor: " + ChatColor.AQUA + traitorNum);
+        score.setScore(i--);
+        score = obj.getScore("Spawn: " + ChatColor.AQUA + spawnPoint.getBlockX() + " " + spawnPoint.getBlockY() + " " + spawnPoint.getBlockZ());
         score.setScore(i--);
 
-//        //全員に表示
-//        for (Player p : Bukkit.getOnlinePlayers()) {
-//            p.setScoreboard(info);
-//        }
     }
 
     public void registerTeam(Scoreboard board) {
@@ -280,6 +303,7 @@ public final class TrickandCollect extends JavaPlugin {
 
     public void setSpawnPoint(Location spawnPoint) {
         this.spawnPoint = spawnPoint;
+        reloadInfo();
     }
 
     public Villager getCollector() {
@@ -296,6 +320,7 @@ public final class TrickandCollect extends JavaPlugin {
 
     public void setTraitorNum(int traitorNum) {
         this.traitorNum = traitorNum;
+        reloadInfo();
     }
 
     public Scoreboard getInfo() {

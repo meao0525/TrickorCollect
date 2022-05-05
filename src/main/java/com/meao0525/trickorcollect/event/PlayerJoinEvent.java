@@ -1,6 +1,5 @@
-package com.meao0525.trickandcollect.event;
+package com.meao0525.trickorcollect.event;
 
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 public class PlayerJoinEvent implements Listener {

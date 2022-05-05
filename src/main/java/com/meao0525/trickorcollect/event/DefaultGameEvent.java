@@ -1,7 +1,6 @@
-package com.meao0525.trickandcollect.event;
+package com.meao0525.trickorcollect.event;
 
-import com.meao0525.trickandcollect.TrickandCollect;
-import org.bukkit.Bukkit;
+import com.meao0525.trickorcollect.TrickorCollect;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,9 +10,9 @@ import org.bukkit.event.inventory.InventoryType;
 
 public class DefaultGameEvent implements Listener {
 
-    private TrickandCollect plugin;
+    private TrickorCollect plugin;
 
-    public DefaultGameEvent(TrickandCollect plugin) {
+    public DefaultGameEvent(TrickorCollect plugin) {
         this.plugin = plugin;
     }
 
