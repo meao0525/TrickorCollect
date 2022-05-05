@@ -118,6 +118,7 @@ public final class TrickandCollect extends JavaPlugin {
         collector.setCustomNameVisible(true);
         //インベントリを与える
         collects = Bukkit.createInventory(collector, 18, "目標アイテム");
+        //TODO: 発光させる
 
         //チーム振り分け
         Collections.shuffle(tcPlayers);
