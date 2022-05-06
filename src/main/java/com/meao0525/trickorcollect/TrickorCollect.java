@@ -16,11 +16,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +43,9 @@ public final class TrickorCollect extends JavaPlugin {
     private Location spawnPoint;
     //収集進捗格納用
     Inventory collects;
+    //収集アイテム保存用
+    private ArrayList<ItemStack> collectItems = new ArrayList<>();
+    private int itemCount = 0;
 
     //タイマー
     private int time = 20; //分
@@ -80,6 +85,8 @@ public final class TrickorCollect extends JavaPlugin {
         reloadInfo();
         //チーム登録
         registerTeam(manager.getMainScoreboard());
+        //イベント登録
+        registerEvents();
     }
 
     @Override
@@ -103,17 +110,111 @@ public final class TrickorCollect extends JavaPlugin {
         }
         //プレイヤーリスト作成
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!p.getGameMode().equals(GameMode.CREATIVE)) {
+            if (!p.getGameMode().equals(GameMode.SPECTATOR)) {
                 tcPlayers.add(p);
             }
         }
 
         //初期地点を設定
         spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
+        //収集アイテムの保存
+        createCollectItemList();
+        //ゲームプレイヤー設定
+        makeTcPlayers();
+        //取り立て屋のインベントリを空にする
+        collects.clear();
+        //ノーマルモードにする
+        Bukkit.getWorlds().get(0).setDifficulty(Difficulty.NORMAL);
 
-        //村人召喚
-        summonCollector();
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームを開始します");
+        //イベント登録
+        registerEvents();
+        //タイマースタート
+        timer = new GameTimer(time);
+        timer.runTaskTimer(this, 0, 20);
+    }
 
+    public void stop() {
+        // 終える
+        game = false;
+        //取り立て屋のインベントリを戻す
+        for (int i=0; i<27; i++) {
+            ItemStack item = collectItems.get(i);
+            if (!item.getType().equals(Material.BARRIER)) {
+                collects.setItem(i, item);
+            }
+        }
+        //保存用リストを空にする
+        collectItems.clear();
+        itemCount = 0;
+        //タイマー止める
+        timer.cancel();
+        //インベントリ空にする
+        for (Player p : tcPlayers) {
+            //チーム解散
+            if (collectorTeam.hasEntry(p.getDisplayName())) {
+                collectorTeam.removeEntry(p.getDisplayName());
+            } else {
+                traitorTeam.removeEntry(p.getDisplayName());
+            }
+            //インベントリを殻にする
+            p.getInventory().clear();
+            //スコアボード変更
+            p.setScoreboard(info);
+            //タイマー非表示
+            timerBar.removePlayer(p);
+            //エフェクト
+            p.sendTitle("", ChatColor.GOLD + "--- 終了---", 0, 60, 20);
+            p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.3F, 0.5F);
+        }
+        //ピースフルにする
+        Bukkit.getWorlds().get(0).setDifficulty(Difficulty.PEACEFUL);
+
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームが終わりました");
+        //プレイヤーリストを空にする
+        tcPlayers.clear();
+    }
+
+    //取り立て屋（村人）作る
+    public void summonCollector() {
+        if (collector == null) {
+            /***村人の作り方***/
+            World world = Bukkit.getWorlds().get(0);
+            //今回の取り立て屋
+            collector = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
+            collector.setAI(false);
+            collector.setCustomName("取り立て屋");
+            collector.setCustomNameVisible(true);
+            collector.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
+            //インベントリを与える
+            collects = Bukkit.createInventory(collector, 27, "目標アイテム");
+            //音
+            world.playSound(spawnPoint, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 0.5f);
+        } else {
+            //toggleで消す
+            collector.remove();
+        }
+    }
+
+    //収集アイテム保存するやつ
+    public void createCollectItemList() {
+        for (int i=0; i<27; i++) {
+            ItemStack item = collects.getItem(i);
+            if (item != null) {
+                //同じの取得してもスタックしないためのNBT追加
+                ItemMeta meta = item.getItemMeta();
+                meta.setCustomModelData(1);
+                item.setItemMeta(meta);
+                collectItems.add(item);
+                itemCount++;
+            } else {
+                collectItems.add(new ItemStack(Material.BARRIER));
+            }
+        }
+    }
+
+    //ゲーム開始時の各プレイヤー設定
+    public void makeTcPlayers() {
         //チーム振り分け
         Collections.shuffle(tcPlayers);
         int tcount = traitorNum;
@@ -137,79 +238,27 @@ public final class TrickorCollect extends JavaPlugin {
             p.teleport(spawnPoint);
             //スコアボード変更
             p.setScoreboard(manager.getMainScoreboard());
+            //サバイバルモードに設定
+            p.setGameMode(GameMode.SURVIVAL);
             //タイマー表示
             timerBar.addPlayer(p);
             //合図は大事
             p.sendTitle("", ChatColor.GOLD + "--- start! ---", 10, 70, 20);
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_SHOOT, 3.0F, 3.0F);
         }
-
-        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームを開始します");
-        //イベント登録
-        registerEvents();
-        //タイマースタート
-        timer = new GameTimer(time);
-        timer.runTaskTimer(this, 0, 20);
-    }
-
-    public void stop() {
-        // 終える
-        game = false;
-        //村人は用済み
-        collector.damage(8000);
-        //タイマー止める
-        timer.cancel();
-        //インベントリ空にする
-        for (Player p : tcPlayers) {
-            //チーム解散
-            if (collectorTeam.hasEntry(p.getDisplayName())) {
-                collectorTeam.removeEntry(p.getDisplayName());
-            } else {
-                traitorTeam.removeEntry(p.getDisplayName());
-            }
-            //インベントリを殻にする
-            p.getInventory().clear();
-            //スコアボード変更
-            p.setScoreboard(info);
-            //タイマー非表示
-            timerBar.removePlayer(p);
-            //エフェクト
-            p.sendTitle("", ChatColor.GOLD + "--- 終了---", 0, 60, 20);
-            p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.3F, 0.5F);
-        }
-
-        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームが終わりました");
-        //プレイヤーリストを空にする
-        tcPlayers.clear();
-    }
-
-    //コレクター（村人）作る
-    void summonCollector() {
-        /***村人の作り方***/
-        World world = Bukkit.getWorlds().get(0);
-        //今回の取り立て屋
-        collector = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
-        collector.setAI(false);
-        collector.setCustomName("取り立て屋");
-        collector.setCustomNameVisible(true);
-        collector.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
-        //インベントリを与える
-        collects = Bukkit.createInventory(collector, 18, "目標アイテム");
     }
 
     //ゲーム開始時のインベントリ作るやつ
-    void setGameInventory(Player player) {
+    public void setGameInventory(Player player) {
         Inventory inv = player.getInventory();
         //まず空っぽ
         inv.clear();
 
-        //目標アイテム表示
-        for (int i = 0; i < GameItems.values().length; i++) {
-            inv.setItem(i+9, GameItems.values()[i].toItemStack());
-        }
-        //残り枠をバリアブロックにする
-        for (int i = 27; i < 36; i++) {
-            inv.setItem(i, new ItemStack(Material.BARRIER));
+        //インベントリに目標アイテムを表示
+        for (int i = 0; i < 27; i++) {
+            ItemStack item = collectItems.get(i);
+            //目標アイテムをコピーしていく
+            inv.setItem(i+9, item);
         }
 
         //ツール渡す
@@ -218,7 +267,7 @@ public final class TrickorCollect extends JavaPlugin {
         }
     }
 
-    HashSet<ItemStack> createToolsSet() {
+    public HashSet<ItemStack> createToolsSet() {
         HashSet<ItemStack> tools = new HashSet<>();
         //ツールセット作成
         tools.add(new ItemStack(Material.IRON_SWORD));
@@ -277,13 +326,13 @@ public final class TrickorCollect extends JavaPlugin {
             collectorTeam = board.registerNewTeam("collectorteam");
             collectorTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
             collectorTeam.setAllowFriendlyFire(true);
-            collectorTeam.setColor(ChatColor.BLUE);
+            collectorTeam.setColor(ChatColor.WHITE);
         }
         if (traitorTeam == null) {
             traitorTeam = board.registerNewTeam("traitorteam");
             traitorTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
             traitorTeam.setAllowFriendlyFire(true);
-            traitorTeam.setColor(ChatColor.RED);
+            traitorTeam.setColor(ChatColor.WHITE);
         }
     }
 
@@ -303,6 +352,7 @@ public final class TrickorCollect extends JavaPlugin {
 
     public void setSpawnPoint(Location spawnPoint) {
         this.spawnPoint = spawnPoint;
+        collector.teleport(spawnPoint);
         reloadInfo();
     }
 
@@ -312,6 +362,14 @@ public final class TrickorCollect extends JavaPlugin {
 
     public Inventory getCollects() {
         return collects;
+    }
+
+    public ArrayList<ItemStack> getCollectItems() {
+        return collectItems;
+    }
+
+    public int getItemCount() {
+        return itemCount;
     }
 
     public int getTraitorNum() {

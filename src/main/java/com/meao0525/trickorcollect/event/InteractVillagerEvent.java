@@ -11,6 +11,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+
 public class InteractVillagerEvent implements Listener {
 
     private TrickorCollect plugin;
@@ -29,23 +31,30 @@ public class InteractVillagerEvent implements Listener {
 
         //プレイヤー取得
         Player player = e.getPlayer();
-        for (GameItems i : GameItems.values()) {
-            //手に持ってるアイテムが納品アイテムか
+        //ゲーム中か
+        if (plugin.isGame()) {
+            //目標アイテム取得
+            ArrayList<ItemStack> collectItems = plugin.getCollectItems();
+            //手に持ってるアイテムが目標アイテムか
             ItemStack inMainHand = player.getInventory().getItemInMainHand();
-            if (inMainHand.getType().equals(i.getMaterial())) {
-                //納品アイテム持ってたら回収
-                int dif = collectItem(i.getIndex(), i.getAmount(), inMainHand);
-                //回収しまーす
-                player.getInventory().getItemInMainHand().setAmount(dif);
-                //ゲーム終わったかな？？？？
-                check();
-                return;
+            for (int i=0; i<collectItems.size(); i++) {
+                if (inMainHand.getType().equals(collectItems.get(i).getType())) {
+                    //納品アイテム持ってたら回収
+                    int dif = collectItem(i, collectItems.get(i).getAmount(), inMainHand);
+                    //回収しまーす
+                    player.getInventory().getItemInMainHand().setAmount(dif);
+                    //ゲーム終わったかな？？？？
+                    check();
+                    return;
+                }
             }
+            //該当アイテム持ってないので進捗表示
+            player.openInventory(plugin.getCollects());
+
+        } else {
+            //ゲーム中じゃない場合は目標アイテムを設定できるよ
+            player.openInventory(plugin.getCollects());
         }
-
-        //該当アイテム持ってないので進捗表示
-        player.openInventory(plugin.getCollects());
-
     }
 
     public int collectItem(int index, int max, ItemStack item) {
@@ -81,16 +90,19 @@ public class InteractVillagerEvent implements Listener {
         int checkcount = 0;
         //現在の納品状況
         Inventory collects = plugin.getCollects();
+        //目標アイテム取得
+        ArrayList<ItemStack> collectItems = plugin.getCollectItems();
         //必要数たりてるかちぇえええええっく
-        for (GameItems i : GameItems.values()) {
-            ItemStack current = collects.getItem(i.getIndex());
-            if (current != null && i.getAmount() == current.getAmount()) {
+        for (int i=0; i<collectItems.size(); i++) {
+            ItemStack current = collects.getItem(i);
+            if (current != null && collectItems.get(i).getAmount() == current.getAmount()) {
                 checkcount++;
             }
         }
         //半分以上が必要数に足りている
-        Bukkit.broadcastMessage("現在数" + checkcount);
-        if (checkcount > 8) {
+        Bukkit.broadcastMessage("現在数: " + checkcount);
+        int need = plugin.getItemCount() / 2;
+        if (checkcount > need) {
             Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームクリア！");
             plugin.stop();
         }
