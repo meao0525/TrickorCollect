@@ -22,6 +22,10 @@ public class PlayerRespawnEvent implements Listener {
 
     @EventHandler
     public void PlayerSneakEventListener(PlayerToggleSneakEvent e) {
+        if (!plugin.isGame()) {
+            return;
+        }
+
         Player player = e.getPlayer();
 
         if (!player.isSneaking()) {
@@ -43,6 +47,10 @@ public class PlayerRespawnEvent implements Listener {
 
     @EventHandler
     public void PlayerMoveEventListener(PlayerMoveEvent e) {
+        if (!plugin.isGame()) {
+            return;
+        }
+
         //座標の取得(ブロック単位でやらないとシビアすぎる)
         Location from = e.getFrom().getBlock().getLocation();
         Location to = e.getTo().getBlock().getLocation();

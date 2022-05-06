@@ -24,13 +24,22 @@ public class GameCommand implements CommandExecutor {
                     "/tc start --- ゲームスタート\n" +
                     "/tc stop --- ゲームを強制終了\n" +
                     "/tc info --- tc情報を表示\n" +
+                    "/tc summon --- 取り立て屋（村人）を召喚\n" +
                     "/tc spawnpoint --- スポーン地点を設定\n" +
                     "/tc traitor <int> --- 裏切者の人数設定\n");
 
         } else if (args[0].equalsIgnoreCase("start")) {
             //ゲーム開始コマンド
             if (!plugin.isGame()) {
-                plugin.start();
+                if (plugin.getCollector() != null) {
+                    if (!plugin.getCollects().isEmpty()) {
+                        plugin.start();
+                    } else {
+                        sender.sendMessage(ChatColor.GRAY + "収集アイテムが設定されていません");
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.GRAY + "まずは /tc summon で収集アイテムを設定してください");
+                }
             } else {
                 sender.sendMessage(ChatColor.GRAY + "ゲームは始まってるお");
             }
@@ -47,6 +56,14 @@ public class GameCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("info")) {
             //情報を表示
             plugin.toggleInfo();
+
+        } else if (args[0].equalsIgnoreCase("summon")) {
+            //取り立て屋（村人）を召喚
+            if (!plugin.isGame()) {
+                plugin.summonCollector();
+            } else {
+                sender.sendMessage(ChatColor.GRAY + "ゲーム中は使えません");
+            }
 
         } else if (args[0].equalsIgnoreCase("spawnpoint")) {
             //スポーン地点設定
