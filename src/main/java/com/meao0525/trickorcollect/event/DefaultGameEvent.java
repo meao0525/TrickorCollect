@@ -1,12 +1,19 @@
 package com.meao0525.trickorcollect.event;
 
 import com.meao0525.trickorcollect.TrickorCollect;
+import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class DefaultGameEvent implements Listener {
 
@@ -24,15 +31,30 @@ public class DefaultGameEvent implements Listener {
         }
 
         //プレイヤーのクイックバー（手持ち）以外のインベントリですかって話
-        InventoryType type = e.getClickedInventory().getType();
+        Inventory inv = e.getClickedInventory();
+        if (inv == null) { return; }
+
+        InventoryType type = inv.getType();
         if (type.equals(InventoryType.PLAYER) && e.getSlotType().equals(InventoryType.SlotType.CONTAINER)) {
             e.setCancelled(true);
         }
 
-        //目標インベントリでも駄目ですよ
+        //目標インベントリもダメ
         if (e.getClickedInventory().getHolder().equals(plugin.getCollector())) {
             e.setCancelled(true);
         }
+
+//        //目標インベントリはクリックしてすぐ盗む
+//        if (e.getClickedInventory().getHolder().equals(plugin.getCollector())) {
+//            //クリックした人
+//            HumanEntity entity = e.getWhoClicked();
+//            //クリックされたアイテム
+//            ItemStack item = e.getCurrentItem();
+//            if (entity.getInventory().firstEmpty() != -1 && item != null) {
+//                entity.getInventory().addItem(item);
+//                e.getClickedInventory().remove(item);
+//            }
+//        }
     }
 
     @EventHandler
@@ -44,6 +66,40 @@ public class DefaultGameEvent implements Listener {
                 //取り立て屋は不死身です
                 e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void PlayerDeathEventListener(PlayerDeathEvent e) {
+        if (!plugin.isGame()) {
+            return;
+        }
+        //死んだときのログを分からなくする
+        e.setDeathMessage(e.getEntity().getDisplayName() + "が死亡しました");
+        //目標アイテムをぶちまけない
+        for (ItemStack i : e.getDrops()) {
+            ItemMeta meta = i.getItemMeta();
+            if (i.getType().equals(Material.BARRIER) ||
+                    meta != null && meta.hasCustomModelData() && meta.getCustomModelData() == 1) {
+                //一旦消しちゃおう
+                i.setAmount(0);
+            }
+        }
+    }
+
+    @EventHandler
+    public void PlayerRespawnEventListener(PlayerRespawnEvent e) {
+        //リスポーン時にもう一度インベントリセット
+        if (!plugin.isGame()) {
+            return;
+        }
+
+        Inventory inv = e.getPlayer().getInventory();
+        //インベントリに目標アイテムを表示
+        for (int i = 0; i < 27; i++) {
+            ItemStack item = plugin.getCollectItems().get(i);
+            //目標アイテムをコピーしていく
+            inv.setItem(i+9, item);
         }
     }
 

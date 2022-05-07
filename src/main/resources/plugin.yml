@@ -1,7 +1,7 @@
 name: TrickorCollect
 version: '${project.version}'
 main: com.meao0525.trickorcollect.TrickorCollect
-api-version: 1.18
+api-version: 1.17
 authors: [ meao0525 ]
 
 commands:

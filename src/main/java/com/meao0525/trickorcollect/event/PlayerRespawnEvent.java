@@ -20,6 +20,8 @@ public class PlayerRespawnEvent implements Listener {
 
     public PlayerRespawnEvent(TrickorCollect plugin) { this.plugin = plugin; }
 
+    //TODO: なんかおかしかった
+
     @EventHandler
     public void PlayerSneakEventListener(PlayerToggleSneakEvent e) {
         if (!plugin.isGame()) {

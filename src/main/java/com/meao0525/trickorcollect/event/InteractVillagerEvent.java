@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class InteractVillagerEvent implements Listener {
                 }
             }
             //該当アイテム持ってないので進捗表示
+            //TODO: 自分のインベントリ表示しない
             player.openInventory(plugin.getCollects());
 
         } else {
@@ -100,7 +102,6 @@ public class InteractVillagerEvent implements Listener {
             }
         }
         //半分以上が必要数に足りている
-        Bukkit.broadcastMessage("現在数: " + checkcount);
         int need = plugin.getItemCount() / 2;
         if (checkcount > need) {
             Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームクリア！");

@@ -63,9 +63,13 @@ public final class TrickorCollect extends JavaPlugin {
 
     //TODO: ゲーム内イベントありかも
     /*
-     *ウーパールーパー捕まえたら足早くなる
-     *
+     * ウーパールーパー捕まえたらエフェクトたくさん
+     * 取り立て屋の周りに襲撃者
+     * インベントリシャッフル
+     * 座標シャッフル
      */
+
+    //TODO: チャット規制
 
     @Override
     public void onEnable() {
@@ -92,6 +96,7 @@ public final class TrickorCollect extends JavaPlugin {
     @Override
     public void onDisable() {
         // 停止時
+        collector.remove();
     }
 
     public void registerEvents() {
@@ -115,8 +120,6 @@ public final class TrickorCollect extends JavaPlugin {
             }
         }
 
-        //初期地点を設定
-        spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
         //収集アイテムの保存
         createCollectItemList();
         //ゲームプレイヤー設定
@@ -149,7 +152,7 @@ public final class TrickorCollect extends JavaPlugin {
         itemCount = 0;
         //タイマー止める
         timer.cancel();
-        //インベントリ空にする
+
         for (Player p : tcPlayers) {
             //チーム解散
             if (collectorTeam.hasEntry(p.getDisplayName())) {
@@ -193,6 +196,7 @@ public final class TrickorCollect extends JavaPlugin {
         } else {
             //toggleで消す
             collector.remove();
+            collector = null;
         }
     }
 
@@ -226,10 +230,12 @@ public final class TrickorCollect extends JavaPlugin {
             if (tcount > 0) {
                 //まだ裏切者を作れる
                 traitorTeam.addEntry(p.getDisplayName());
+                p.sendMessage(ChatColor.DARK_RED + "あなたはtraitorになりました...w");
                 tcount--;
             } else {
                 //残りは集める人
                 collectorTeam.addEntry(p.getDisplayName());
+                p.sendMessage(ChatColor.DARK_RED + "あなたはcollectorになりました");
             }
             //インベントリ
             setGameInventory(p);
@@ -352,7 +358,9 @@ public final class TrickorCollect extends JavaPlugin {
 
     public void setSpawnPoint(Location spawnPoint) {
         this.spawnPoint = spawnPoint;
-        collector.teleport(spawnPoint);
+        if (collector != null) {
+            collector.teleport(spawnPoint);
+        }
         reloadInfo();
     }
 
