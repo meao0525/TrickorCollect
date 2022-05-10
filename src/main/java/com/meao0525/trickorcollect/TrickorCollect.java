@@ -69,8 +69,6 @@ public final class TrickorCollect extends JavaPlugin {
      * 座標シャッフル
      */
 
-    //TODO: チャット規制
-
     @Override
     public void onEnable() {
         // 起動時
