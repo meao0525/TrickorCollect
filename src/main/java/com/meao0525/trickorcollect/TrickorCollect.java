@@ -2,10 +2,7 @@ package com.meao0525.trickorcollect;
 
 import com.meao0525.trickorcollect.command.CommandTabCompleter;
 import com.meao0525.trickorcollect.command.GameCommand;
-import com.meao0525.trickorcollect.event.DefaultGameEvent;
-import com.meao0525.trickorcollect.event.InteractVillagerEvent;
-import com.meao0525.trickorcollect.event.PlayerRespawnEvent;
-import com.meao0525.trickorcollect.event.PlayerStealItemEvent;
+import com.meao0525.trickorcollect.event.*;
 import com.meao0525.trickorcollect.item.GameItems;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
@@ -102,6 +99,7 @@ public final class TrickorCollect extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InteractVillagerEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerStealItemEvent(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerGameChatEvent(this), this);
     }
 
     public void start() {

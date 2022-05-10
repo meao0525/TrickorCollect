@@ -27,17 +27,16 @@ public class InteractVillagerEvent implements Listener {
         //村人をクリックした
         String entityName = e.getRightClicked().getCustomName();
         if (entityName == null || !entityName.equalsIgnoreCase("取り立て屋")) { return; }
-        //デフォのイベントキャンセル
-        e.setCancelled(true);
 
         //プレイヤー取得
         Player player = e.getPlayer();
+        ItemStack inMainHand = player.getInventory().getItemInMainHand();
         //ゲーム中か
         if (plugin.isGame()) {
             //目標アイテム取得
             ArrayList<ItemStack> collectItems = plugin.getCollectItems();
             //手に持ってるアイテムが目標アイテムか
-            ItemStack inMainHand = player.getInventory().getItemInMainHand();
+
             for (int i=0; i<collectItems.size(); i++) {
                 if (inMainHand.getType().equals(collectItems.get(i).getType())) {
                     //納品アイテム持ってたら回収
@@ -57,6 +56,9 @@ public class InteractVillagerEvent implements Listener {
             //ゲーム中じゃない場合は目標アイテムを設定できるよ
             player.openInventory(plugin.getCollects());
         }
+
+        //デフォのイベントキャンセル
+        e.setCancelled(true);
     }
 
     public int collectItem(int index, int max, ItemStack item) {
