@@ -66,6 +66,8 @@ public final class TrickorCollect extends JavaPlugin {
      * 座標シャッフル
      */
 
+    //TODO: 投票されたら村人に触れない
+
     @Override
     public void onEnable() {
         // 起動時
@@ -122,6 +124,8 @@ public final class TrickorCollect extends JavaPlugin {
         makeTcPlayers();
         //取り立て屋のインベントリを空にする
         collects.clear();
+        //光らせる
+        collector.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
         //ノーマルモードにする
         Bukkit.getWorlds().get(0).setDifficulty(Difficulty.NORMAL);
 
@@ -145,6 +149,8 @@ public final class TrickorCollect extends JavaPlugin {
         }
         //保存用リストを空にする
         collectItems.clear();
+        //光を消す
+        collector.removePotionEffect(PotionEffectType.GLOWING);
         itemCount = 0;
         //タイマー止める
         timer.cancel();
@@ -184,7 +190,6 @@ public final class TrickorCollect extends JavaPlugin {
             collector.setAI(false);
             collector.setCustomName("取り立て屋");
             collector.setCustomNameVisible(true);
-            collector.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
             //インベントリを与える
             collects = Bukkit.createInventory(collector, 27, "目標アイテム");
             //音

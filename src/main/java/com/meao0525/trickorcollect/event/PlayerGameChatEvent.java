@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 
@@ -19,20 +20,24 @@ public class PlayerGameChatEvent implements Listener {
     }
 
     @EventHandler
-    public void PlayerChatEventListener(PlayerChatEvent e) {
+    public void PlayerChatEventListener(AsyncPlayerChatEvent e) {
         //近くの人にしかチャットが見えないイベんちょ
         if (!plugin.isGame()) {
             return;
         }
-        
-//        //受信者全員との距離を測る
+
+        //受信者全員との距離を測る
+        ArrayList<Player> cantSeeChat = new ArrayList<>();
         Player sender = e.getPlayer();
         for (Player p : e.getRecipients()) {
             double dis = p.getLocation().distance(sender.getLocation());
-            //10メートル以内の人にだけ送る
+            //10メートル以上離れた人を取り出す
             if (dis > 10.0) {
-                e.getRecipients().remove(p);
+                cantSeeChat.add(p);
             }
         }
+        //離れた人をRecipientsから外す
+        e.getRecipients().removeAll(cantSeeChat);
+
     }
 }

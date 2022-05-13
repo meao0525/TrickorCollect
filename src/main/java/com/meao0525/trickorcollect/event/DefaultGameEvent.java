@@ -15,6 +15,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.HashSet;
+import java.util.Random;
+
 public class DefaultGameEvent implements Listener {
 
     private TrickorCollect plugin;
@@ -101,6 +104,28 @@ public class DefaultGameEvent implements Listener {
             //目標アイテムをコピーしていく
             inv.setItem(i+9, item);
         }
+        //ランダムにツール１つと食べ物をあげる
+        inv.addItem(getRandomTool());
+        inv.addItem(new ItemStack(Material.COOKED_COD, 64));
+    }
+
+    public ItemStack getRandomTool() {
+        //ランダムなツールを返す
+        ItemStack tool;
+        Random rand = new Random();
+        int num = rand.nextInt(4);
+
+        if (num == 0) {
+            tool = new ItemStack(Material.IRON_SWORD);
+        } else if (num == 1) {
+            tool = new ItemStack(Material.IRON_PICKAXE);
+        } else if (num == 2) {
+            tool = new ItemStack(Material.IRON_AXE);
+        } else {
+            tool = new ItemStack(Material.IRON_SHOVEL);
+        }
+
+        return tool;
     }
 
 }

@@ -13,6 +13,7 @@ import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -44,44 +45,51 @@ public class PlayerStealItemEvent implements Listener {
             //鉄権を持ってる人狼ならアイテムを盗める
             if (itemInMain.getType().equals(Material.IRON_SWORD)) {
                 //クリックされたのだ～れ
-                HumanEntity target;
+                Inventory targetInv;
                 int invsize;
                 if (e.getRightClicked() instanceof Player) {
                     Player ptarget = (Player)e.getRightClicked();
                     //ゲーム参加者か？
                     if (!pluin.getTcPlayers().contains(ptarget)) { return; }
-                    target = ptarget;
+                    targetInv = ptarget.getInventory();
                     invsize = 9;
                 } else if(e.getRightClicked() instanceof Villager) {
                     //取り立て屋さん？
-                    String entityName = e.getRightClicked().getCustomName();
-                    if (entityName == null || !entityName.equalsIgnoreCase("取り立て屋"))  { return; }
-                    target = (HumanEntity) e.getRightClicked();
+                    Villager vtarget = (Villager) e.getRightClicked();
+                    if (vtarget.getCustomName() == null || !vtarget.getCustomName().equalsIgnoreCase("取り立て屋"))  { return; }
+                    targetInv = pluin.getCollects();
                     invsize = 27;
                 } else {
                     //それ以外は何もしない
                     return;
                 }
-                stealItem(player, target, invsize);
+                stealItem(player, targetInv, invsize);
                 //クールダウン
                 player.setCooldown(itemInMain.getType(), 300);
             }
         }
     }
 
-    public void stealItem(Player player, HumanEntity target, int invsize) {
+    public void stealItem(Player player, Inventory targetInv, int invsize) {
         //targetの持ち物取得
         ArrayList<ItemStack> items = new ArrayList<>();
         ItemStack item;
         for (int i=0; i<invsize; i++) {
-            item = target.getInventory().getItem(i);
+            item = targetInv.getItem(i);
+            if (item != null) {
+                items.add(item);
+            }
+        }
+        //オフハンド
+        if (invsize == 9) {
+            item = targetInv.getItem(40);
             if (item != null) {
                 items.add(item);
             }
         }
 
         if (items.isEmpty()) {
-            sendActionBarMessage(player, ChatColor.GRAY + target.getName() + "はアイテムを持っていないようだ...");
+            sendActionBarMessage(player, ChatColor.GRAY + "チッ...文無しか...");
             return;
         }
 
@@ -90,32 +98,18 @@ public class PlayerStealItemEvent implements Listener {
 
         //盗む処理
         item = items.get(0);
-        int index = target.getInventory().first(item);
+        int index = targetInv.first(item);
         int amount = item.getAmount() / 10 + 1;
 
         //盗んだ方に一つ渡す
         player.getInventory().addItem(new ItemStack(item.getType(), amount));
-        player.sendMessage(ChatColor.AQUA + target.getName() + ChatColor.RESET + "からアイテムを盗みました");
+        player.sendMessage(ChatColor.AQUA + "アイテムを盗みました！");
         //targetの餅数一つ減らす
-        target.getInventory().getItem(index).setAmount(item.getAmount() - amount);
+        targetInv.getItem(index).setAmount(item.getAmount() - amount);
     }
 
     public void sendActionBarMessage(Player player, String msg) {
         BaseComponent[] component = TextComponent.fromLegacyText(msg);
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
-    }
-
-    public boolean checkCanStealItem(Material mat) {
-        //取れないブロック → null、鉄のツール系、焼き魚
-        if (mat.equals(Material.IRON_SWORD) ||
-                mat.equals(Material.IRON_AXE) ||
-                mat.equals(Material.IRON_PICKAXE) ||
-                mat.equals(Material.IRON_SHOVEL) ||
-                mat.equals(Material.COOKED_COD)) {
-            //盗めないアイテムたちダヨーン
-            return false;
-        }
-        //盗んでいいよーん
-        return true;
     }
 }
