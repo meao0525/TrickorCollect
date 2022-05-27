@@ -5,6 +5,7 @@ import com.meao0525.trickorcollect.command.GameCommand;
 import com.meao0525.trickorcollect.event.*;
 import com.meao0525.trickorcollect.item.GameItems;
 import org.bukkit.*;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -23,6 +24,7 @@ import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public final class TrickorCollect extends JavaPlugin {
@@ -78,6 +80,8 @@ public final class TrickorCollect extends JavaPlugin {
         getCommand("tc").setTabCompleter(new CommandTabCompleter());
         //初期地点を設定
         spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
+        spawnPoint.setX(spawnPoint.getX() + 0.5);
+        spawnPoint.setZ(spawnPoint.getZ() + 0.5);
         //タイマーバー作成
         timerBar = Bukkit.createBossBar("残り時間:", BarColor.GREEN, BarStyle.SOLID);
         //スコアボード設定
@@ -93,7 +97,9 @@ public final class TrickorCollect extends JavaPlugin {
     @Override
     public void onDisable() {
         // 停止時
-        collector.remove();
+        if (collector != null) {
+            collector.remove();
+        }
     }
 
     public void registerEvents() {
@@ -102,6 +108,8 @@ public final class TrickorCollect extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerRespawnEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerStealItemEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerGameChatEvent(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerVoteEvent(this), this);
+
     }
 
     public void start() {
@@ -183,8 +191,16 @@ public final class TrickorCollect extends JavaPlugin {
     //取り立て屋（村人）作る
     public void summonCollector() {
         if (collector == null) {
-            /***村人の作り方***/
-            World world = Bukkit.getWorlds().get(0);
+            /* 村人の作り方 */
+            World world = spawnPoint.getWorld();
+            if (world == null) {
+                Bukkit.broadcastMessage("ワールドを読み込めませんでした");
+                return;
+            }
+            //足元のブロック
+            spawnPoint.add(0, -0.1, 0);
+            spawnPoint.getBlock().setType(Material.DIAMOND_BLOCK);
+            spawnPoint.add(0, 0.1, 0);
             //今回の取り立て屋
             collector = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
             collector.setAI(false);
@@ -236,7 +252,7 @@ public final class TrickorCollect extends JavaPlugin {
             } else {
                 //残りは集める人
                 collectorTeam.addEntry(p.getDisplayName());
-                p.sendMessage(ChatColor.DARK_RED + "あなたはcollectorになりました");
+                p.sendMessage(ChatColor.AQUA + "あなたはcollectorになりました");
             }
             //インベントリ
             setGameInventory(p);
@@ -359,7 +375,13 @@ public final class TrickorCollect extends JavaPlugin {
 
     public void setSpawnPoint(Location spawnPoint) {
         this.spawnPoint = spawnPoint;
+        this.spawnPoint.setX(spawnPoint.getBlockX() + 0.5);
+        this.spawnPoint.setZ(spawnPoint.getBlockZ() + 0.5);
         if (collector != null) {
+            //足元のブロック
+            spawnPoint.add(0, -0.1, 0);
+            spawnPoint.getBlock().setType(Material.DIAMOND_BLOCK);
+            spawnPoint.add(0, 0.1, 0);
             collector.teleport(spawnPoint);
         }
         reloadInfo();

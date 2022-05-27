@@ -1,11 +1,15 @@
 package com.meao0525.trickorcollect.event;
 
 import com.meao0525.trickorcollect.TrickorCollect;
+import org.bukkit.GameRule;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,6 +37,11 @@ public class DefaultGameEvent implements Listener {
             return;
         }
 
+        //投票インベントリは虫
+        if (e.getView().getTitle().equalsIgnoreCase("VOTE")) {
+            return;
+        }
+
         //プレイヤーのクイックバー（手持ち）以外のインベントリですかって話
         Inventory inv = e.getClickedInventory();
         if (inv == null) { return; }
@@ -43,21 +52,10 @@ public class DefaultGameEvent implements Listener {
         }
 
         //目標インベントリもダメ
-        if (e.getClickedInventory().getHolder().equals(plugin.getCollector())) {
+        if (e.getView().getTopInventory().getHolder().equals(plugin.getCollector())) {
+            //上に目標アイテム
             e.setCancelled(true);
         }
-
-//        //目標インベントリはクリックしてすぐ盗む
-//        if (e.getClickedInventory().getHolder().equals(plugin.getCollector())) {
-//            //クリックした人
-//            HumanEntity entity = e.getWhoClicked();
-//            //クリックされたアイテム
-//            ItemStack item = e.getCurrentItem();
-//            if (entity.getInventory().firstEmpty() != -1 && item != null) {
-//                entity.getInventory().addItem(item);
-//                e.getClickedInventory().remove(item);
-//            }
-//        }
     }
 
     @EventHandler
@@ -69,6 +67,19 @@ public class DefaultGameEvent implements Listener {
                 //取り立て屋は不死身です
                 e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void CantBreakVoteBlock(BlockBreakEvent e) {
+        //投票ブロックは壊せない
+        if (!plugin.isGame()) {
+            return;
+        }
+        Location loc = e.getBlock().getLocation();
+        loc.add(0, 1, 0);
+        if (loc.equals(plugin.getSpawnPoint().getBlock().getLocation())) {
+            e.setCancelled(true);
         }
     }
 
@@ -97,16 +108,20 @@ public class DefaultGameEvent implements Listener {
             return;
         }
 
-        Inventory inv = e.getPlayer().getInventory();
+        Player player = e.getPlayer();
+        Inventory inv = player.getInventory();
         //インベントリに目標アイテムを表示
         for (int i = 0; i < 27; i++) {
             ItemStack item = plugin.getCollectItems().get(i);
             //目標アイテムをコピーしていく
             inv.setItem(i+9, item);
         }
-        //ランダムにツール１つと食べ物をあげる
-        inv.addItem(getRandomTool());
-        inv.addItem(new ItemStack(Material.COOKED_COD, 64));
+        player.sendMessage("リスポーン");
+        if (!player.getWorld().getGameRuleValue(GameRule.KEEP_INVENTORY)) {
+            //ランダムにツール１つと食べ物をあげる
+            inv.addItem(getRandomTool());
+            inv.addItem(new ItemStack(Material.COOKED_COD, 64));
+        }
     }
 
     public ItemStack getRandomTool() {
