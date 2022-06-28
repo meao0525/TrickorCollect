@@ -33,6 +33,11 @@ public class InteractVillagerEvent implements Listener {
         ItemStack inMainHand = player.getInventory().getItemInMainHand();
         //ゲーム中か
         if (plugin.isGame()) {
+            //追放されているか
+            if (plugin.getExiled().contains(player)) {
+                player.sendMessage(ChatColor.RED + "追放されているためアクション出来ません");
+                return;
+            }
             //目標アイテム取得
             ArrayList<ItemStack> collectItems = plugin.getCollectItems();
             //手に持ってるアイテムが目標アイテムか
@@ -49,7 +54,6 @@ public class InteractVillagerEvent implements Listener {
                 }
             }
             //該当アイテム持ってないので進捗表示
-            //TODO: 自分のインベントリ表示しない
             player.openInventory(plugin.getCollects());
 
         } else {

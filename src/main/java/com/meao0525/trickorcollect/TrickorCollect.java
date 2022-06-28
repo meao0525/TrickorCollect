@@ -12,6 +12,7 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
+import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -60,6 +61,11 @@ public final class TrickorCollect extends JavaPlugin {
     private Team collectorTeam;
     private Team traitorTeam;
 
+    //投票プレイヤー <プレイヤー, 投票した人リスト>
+    private HashMap<Player, ArrayList<Player>> voteMap = new HashMap<>();
+    //追放者リスト
+    private ArrayList<Player> exiled = new ArrayList<>();
+
     //TODO: ゲーム内イベントありかも
     /*
      * ウーパールーパー捕まえたらエフェクトたくさん
@@ -68,7 +74,7 @@ public final class TrickorCollect extends JavaPlugin {
      * 座標シャッフル
      */
 
-    //TODO: 投票されたら村人に触れない
+    //TODO: 取り立て屋の周りを安全にする
 
     @Override
     public void onEnable() {
@@ -103,13 +109,13 @@ public final class TrickorCollect extends JavaPlugin {
     }
 
     public void registerEvents() {
+        HandlerList.unregisterAll(this);
         getServer().getPluginManager().registerEvents(new DefaultGameEvent(this), this);
         getServer().getPluginManager().registerEvents(new InteractVillagerEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerStealItemEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerGameChatEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerVoteEvent(this), this);
-
     }
 
     public void start() {
@@ -136,6 +142,8 @@ public final class TrickorCollect extends JavaPlugin {
         collector.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
         //ノーマルモードにする
         Bukkit.getWorlds().get(0).setDifficulty(Difficulty.NORMAL);
+        //追放者リスト空にする
+        exiled.clear();
 
         Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームを開始します");
         //イベント登録
@@ -336,7 +344,6 @@ public final class TrickorCollect extends JavaPlugin {
         Score score = obj.getScore("Traitor: " + ChatColor.AQUA + traitorNum);
         score.setScore(i--);
         score = obj.getScore("Spawn: " + ChatColor.AQUA + spawnPoint.getBlockX() + " " + spawnPoint.getBlockY() + " " + spawnPoint.getBlockZ());
-        score.setScore(i--);
 
     }
 
@@ -426,6 +433,14 @@ public final class TrickorCollect extends JavaPlugin {
 
     public Team getTraitorTeam() {
         return traitorTeam;
+    }
+
+    public ArrayList<Player> getExiled() {
+        return exiled;
+    }
+
+    public HashMap<Player, ArrayList<Player>> getVoteMap() {
+        return voteMap;
     }
 
     //タイマー用内部クラス

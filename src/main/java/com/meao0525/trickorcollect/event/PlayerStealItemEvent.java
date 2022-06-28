@@ -51,6 +51,11 @@ public class PlayerStealItemEvent implements Listener {
                     Player ptarget = (Player)e.getRightClicked();
                     //ゲーム参加者か？
                     if (!pluin.getTcPlayers().contains(ptarget)) { return; }
+                    //ターゲットから投票されている
+                    if (isVoted(player, ptarget)) {
+                        sendActionBarMessage(player, ChatColor.RED + "投票されているため盗めません");
+                        return;
+                    }
                     targetInv = ptarget.getInventory();
                     invsize = 9;
                 } else if(e.getRightClicked() instanceof Villager) {
@@ -63,10 +68,26 @@ public class PlayerStealItemEvent implements Listener {
                     //それ以外は何もしない
                     return;
                 }
+                //追放されているか
+                if (pluin.getExiled().contains(player)) {
+                    sendActionBarMessage(player, ChatColor.RED + "追放されているため盗めません");
+                    return;
+                }
+                //盗む処理
                 stealItem(player, targetInv, invsize);
                 //クールダウン
                 player.setCooldown(itemInMain.getType(), 300);
             }
+        }
+    }
+
+    public boolean isVoted(Player player, Player target) {
+        HashMap<Player, ArrayList<Player>> voteMap = pluin.getVoteMap();
+        //ターゲットから投票されている
+        if (voteMap.containsKey(target) && voteMap.get(target).contains(player)) {
+            return true;
+        } else {
+            return false;
         }
     }
 

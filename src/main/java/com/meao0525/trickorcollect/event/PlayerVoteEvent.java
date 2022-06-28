@@ -14,6 +14,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,21 +31,43 @@ public class PlayerVoteEvent implements Listener {
      * 投票してる人からはアイテムを盗まれない
      * 過半数の投票で盗めなくなる
      */
-    //投票プレイヤー
-    private HashMap<Player, ArrayList<Player>> vote;
+    //投票プレイヤー <プレイヤー, 投票した人リスト>
+    private HashMap<Player, ArrayList<Player>> voteMap = new HashMap<>();
+    //投票されたテーブル <プレイヤー, ←に投票した人数>
+    private HashMap<Player, Integer> voted = new HashMap<>();
+    //過半数
+    private int border;
     //投票インベントリ
     private Inventory voteInv;
+    //投票スコア
+    private Objective obj;
+    private final String SCORE_NAME = "vote";
 
     public PlayerVoteEvent(TrickorCollect plugin) {
         this.plugin = plugin;
-        vote = new HashMap<>();
         this.voteInv = createVoteinventory();
+        this.voteMap = plugin.getVoteMap();
 
-        //投票テーブル作るよ
-        for (Player p : plugin.getTcPlayers()) {
-            ArrayList<Player> list = new ArrayList<>();
-            vote.put(p, list);
+        //今回の過半数
+        border = (int)Math.ceil(plugin.getTcPlayers().size() / 2.0);
+        //投票スコア
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        obj = manager.getMainScoreboard().getObjective(SCORE_NAME);
+        if (obj == null) {
+            obj = manager.getMainScoreboard().registerNewObjective(SCORE_NAME, "dummy", "[投票]");
         }
+        obj.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+        obj.getScore(SCORE_NAME).setScore(2);
+
+        for (Player p : plugin.getTcPlayers()) {
+            //投票テーブル作るよ
+            ArrayList<Player> list = new ArrayList<>();
+            voteMap.put(p, list);
+            voted.put(p, 0);
+            //スコア
+            obj.getScore(p.getDisplayName()).setScore(0);
+        }
+
     }
 
     @EventHandler
@@ -78,18 +104,51 @@ public class PlayerVoteEvent implements Listener {
             //投票した人、された人取得
             Player player = (Player) e.getWhoClicked();
             String name = item.getItemMeta().getDisplayName();
-            Player voted = Bukkit.getPlayer(name);
+            Player votedPlayer = Bukkit.getPlayer(name);
             //投票リストに追加
-            ArrayList<Player> list = vote.get(player);
-            list.add(voted);
-            player.sendMessage(list.get(0).getDisplayName());
+            if (voteMap.containsKey(player) && voted.containsKey(votedPlayer)) {
+                ArrayList<Player> list = voteMap.get(player);
+                int num = voted.get(votedPlayer);
+                //既に投票済みか
+                if (list.contains(votedPlayer)) {
+                    //投票解除
+                    list.remove(votedPlayer);
+                    num--;
+                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " が投票されました");
+                } else {
+                    //投票処理
+                    list.add(votedPlayer);
+                    num++;
+                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " の投票が取り消されました");
+                }
+
+                //テーブル更新
+                voted.replace(votedPlayer, num);
+                //スコア更新
+                obj.getScore(votedPlayer.getDisplayName()).setScore(num);
+                //ログ
+                Bukkit.broadcastMessage("現在投票数： " + num);
+                //追放者リスト取得
+                ArrayList<Player> exiled = plugin.getExiled();
+                //過半数チェック
+                if (num >= border && !exiled.contains(votedPlayer)) {
+                    //過半数超えており、追放リストにいないなら追加
+                    exiled.add(votedPlayer);
+                    //メッセージ
+                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " が追放されたぞ～！");
+                } else if (num < border && exiled.contains(votedPlayer)) {
+                    //過半数割っており、追放リストにいたら削除
+                    exiled.remove(votedPlayer);
+                    //メッセージ
+                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " の追放が解除された");
+                }
+            }
         }
     }
 
     public Inventory createVoteinventory() {
         //投票インベントリをつくる
         int invSize = plugin.getTcPlayers().size();
-        //TODO: 頭の悪いif文
         if (invSize <= 9) {
             invSize = 9;
         } else if (invSize <= 18) {
