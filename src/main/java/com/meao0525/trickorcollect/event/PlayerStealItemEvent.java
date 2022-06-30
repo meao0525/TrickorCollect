@@ -76,7 +76,7 @@ public class PlayerStealItemEvent implements Listener {
                 //盗む処理
                 stealItem(player, targetInv, invsize);
                 //クールダウン
-                player.setCooldown(itemInMain.getType(), 300);
+                player.setCooldown(itemInMain.getType(), 600);
             }
         }
     }

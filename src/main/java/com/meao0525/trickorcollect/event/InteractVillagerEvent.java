@@ -107,9 +107,15 @@ public class InteractVillagerEvent implements Listener {
                 checkcount++;
             }
         }
-        //半分以上が必要数に足りている
-        int need = plugin.getItemCount() / 2;
-        if (checkcount > need) {
+//        //半分以上が必要数に足りている
+//        int need = plugin.getItemCount() / 2;
+//        if (checkcount > need) {
+//            Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームクリア！");
+//            plugin.stop();
+//        }
+        //全種類集め終わった
+        int need = plugin.getItemCount();
+        if (checkcount == need) {
             Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームクリア！");
             plugin.stop();
         }

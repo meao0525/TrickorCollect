@@ -37,7 +37,7 @@ public class PlayerGameChatEvent implements Listener {
             }
         }
         //離れた人をRecipientsから外す
-        e.getRecipients().removeAll(cantSeeChat);
+        cantSeeChat.forEach(e.getRecipients()::remove);
 
     }
 }
