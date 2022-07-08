@@ -114,12 +114,12 @@ public class PlayerVoteEvent implements Listener {
                     //投票解除
                     list.remove(votedPlayer);
                     num--;
-                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " が投票されました");
+                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " の投票が取り消されました");
                 } else {
                     //投票処理
                     list.add(votedPlayer);
                     num++;
-                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " の投票が取り消されました");
+                    Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " が投票されました");
                 }
 
                 //テーブル更新

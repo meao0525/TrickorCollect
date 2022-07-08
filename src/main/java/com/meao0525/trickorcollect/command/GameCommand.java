@@ -92,10 +92,20 @@ public class GameCommand implements CommandExecutor {
             if (args.length == 1) {
                 num = 0;
             } else if (args.length == 2) {
-                try {
-                    num = Integer.parseInt(args[1]);
-                } catch (NumberFormatException e) {
-                    return false;
+                if (args[1].equalsIgnoreCase("+1")) {
+                    //1人足す
+                    num = plugin.getTraitorNum() + 1;
+                } else if (args[1].equalsIgnoreCase("-1")) {
+                    //1人減らす
+                    if (plugin.getTraitorNum() <= 0) { return true;}
+                    num =plugin.getTraitorNum() - 1;
+                } else {
+                    //指定の人数にする
+                    try {
+                        num = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
                 }
             } else {
                 return false;

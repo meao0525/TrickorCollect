@@ -6,7 +6,6 @@ com\meao0525\trickorcollect\command\GameCommand.class
 com\meao0525\trickorcollect\event\PlayerRespawnEvent.class
 com\meao0525\trickorcollect\TrickorCollect$GameTimer.class
 com\meao0525\trickorcollect\event\PlayerRespawnEvent$1.class
-com\meao0525\trickorcollect\event\PlayerJoinEvent.class
 com\meao0525\trickorcollect\TrickorCollect.class
 com\meao0525\trickorcollect\event\InteractVillagerEvent.class
 com\meao0525\trickorcollect\event\PlayerRespawnEvent$RespawnThread.class
