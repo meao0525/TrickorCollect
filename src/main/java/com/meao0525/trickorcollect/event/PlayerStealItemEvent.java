@@ -6,6 +6,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -97,7 +98,7 @@ public class PlayerStealItemEvent implements Listener {
         ItemStack item;
         for (int i=0; i<invsize; i++) {
             item = targetInv.getItem(i);
-            if (item != null) {
+            if (item != null && item.getEnchantmentLevel(Enchantment.BINDING_CURSE) != 255) {
                 items.add(item);
             }
         }
@@ -122,10 +123,10 @@ public class PlayerStealItemEvent implements Listener {
         int index = targetInv.first(item);
         int amount = item.getAmount() / 10 + 1;
 
-        //盗んだ方に一つ渡す
+        //盗んだ方に渡す
         player.getInventory().addItem(new ItemStack(item.getType(), amount));
         player.sendMessage(ChatColor.AQUA + "アイテムを盗みました！");
-        //targetの餅数一つ減らす
+        //targetの餅数減らす
         targetInv.getItem(index).setAmount(item.getAmount() - amount);
     }
 

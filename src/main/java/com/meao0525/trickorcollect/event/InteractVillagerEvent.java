@@ -4,13 +4,16 @@ import com.meao0525.trickorcollect.TrickorCollect;
 import com.meao0525.trickorcollect.item.GameItems;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 
@@ -80,9 +83,15 @@ public class InteractVillagerEvent implements Listener {
             currentAmount = 0;
         }
 
-        if (currentAmount + newAmount > max) {
+        if (currentAmount + newAmount >= max) {
             //あふれちゃう
-            collects.setItem(index, new ItemStack(item.getType(), max));
+            ItemStack complete = new ItemStack(item.getType(), max);
+            //完了エフェクト
+            ItemMeta meta = complete.getItemMeta();
+            meta.addEnchant(Enchantment.BINDING_CURSE, 255, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            complete.setItemMeta(meta);
+            collects.setItem(index, complete);
             //差分を返す
             return currentAmount + newAmount - max;
         } else {
