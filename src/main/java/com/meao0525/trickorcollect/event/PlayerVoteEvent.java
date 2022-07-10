@@ -9,18 +9,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class PlayerVoteEvent implements Listener {
 
@@ -57,7 +57,6 @@ public class PlayerVoteEvent implements Listener {
             obj = manager.getMainScoreboard().registerNewObjective(SCORE_NAME, "dummy", "[投票]");
         }
         obj.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-        obj.getScore(SCORE_NAME).setScore(2);
 
         for (Player p : plugin.getTcPlayers()) {
             //投票テーブル作るよ
@@ -103,22 +102,25 @@ public class PlayerVoteEvent implements Listener {
             if (item == null) { return; }
             //投票した人、された人取得
             Player player = (Player) e.getWhoClicked();
-            String name = item.getItemMeta().getDisplayName();
-            Player votedPlayer = Bukkit.getPlayer(name);
+            ItemMeta meta = item.getItemMeta();
+            Player votedPlayer = Bukkit.getPlayer(meta.getDisplayName());
             //投票リストに追加
             if (voteMap.containsKey(player) && voted.containsKey(votedPlayer)) {
                 ArrayList<Player> list = voteMap.get(player);
                 int num = voted.get(votedPlayer);
+                List<String> lore = meta.getLore();
                 //既に投票済みか
                 if (list.contains(votedPlayer)) {
                     //投票解除
                     list.remove(votedPlayer);
                     num--;
+                    lore.remove(player.getDisplayName());
                     Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " の投票が取り消されました");
                 } else {
                     //投票処理
                     list.add(votedPlayer);
                     num++;
+                    lore.add(player.getDisplayName());
                     Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " が投票されました");
                 }
 
@@ -126,6 +128,9 @@ public class PlayerVoteEvent implements Listener {
                 voted.replace(votedPlayer, num);
                 //スコア更新
                 obj.getScore(votedPlayer.getDisplayName()).setScore(num);
+                //Lore更新
+                meta.setLore(lore);
+                item.setItemMeta(meta);
                 //ログ
                 Bukkit.broadcastMessage("現在投票数： " + num);
                 //追放者リスト取得
@@ -167,11 +172,16 @@ public class PlayerVoteEvent implements Listener {
         for (Player p : plugin.getTcPlayers()) {
             //プレイヤーヘッド取得
             ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+            SkullMeta meta = (SkullMeta) head.getItemMeta();
             //ヘッドの名前をPlayer名にする
-            ItemMeta meta = head.getItemMeta();
             meta.setDisplayName(p.getDisplayName());
+            //スキンをPlayerのものにする
+            meta.setOwningPlayer(p);
+            //Loreに投票してる人を表示
+            ArrayList<String> lore = new ArrayList<>();
+            lore.add("↓投票してる人↓");
+            meta.setLore(lore);
             head.setItemMeta(meta);
-            //TODO: Loreに投票してる人を表示ぃ！？
             //ヘッドを格納
             inv.addItem(head);
         }
