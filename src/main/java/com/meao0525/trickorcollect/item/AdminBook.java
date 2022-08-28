@@ -28,7 +28,9 @@ public class AdminBook {
             {"-スポーン地点を設定\n\n", "/tc spawnpoint"},
             {"-traitor + 1\n\n", "/tc traitor +1"},
             {"-traitor - 1\n\n", "/tc traitor -1"},
-            {"-ルールブックを配布", "/tc rulebook"}};
+            {"-ルールブックを配布\n\n", "/tc rulebook"},
+            {"-ゲーム時間 + 5分\n\n", "/tc time +5"},
+            {"-ゲーム時間 - 5分\n\n", "/tc time -5"}};
 
     public ItemStack toItemStack() {
         //本の生成
@@ -52,6 +54,17 @@ public class AdminBook {
         meta.spigot().addPage(list.toArray(new BaseComponent[list.size()]));
 
         //2ページ目
+        list.clear();
+        list.add(new TextComponent(PAGE_HEADER));
+        //summon, info, spawnpoint, traitor, rulebook
+        while(i < 7) {
+            list.add(createCommandComponent(CONTENTS[i][0], CONTENTS[i][1]));
+            i++;
+        }
+        //ページにセットする
+        meta.spigot().addPage(list.toArray(new BaseComponent[list.size()]));
+
+        //3ページ目
         list.clear();
         list.add(new TextComponent(PAGE_HEADER));
         //summon, info, spawnpoint, traitor, rulebook

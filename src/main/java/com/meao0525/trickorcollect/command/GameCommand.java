@@ -5,6 +5,7 @@ import com.meao0525.trickorcollect.item.AdminBook;
 import com.meao0525.trickorcollect.item.RuleBook;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -35,6 +36,7 @@ public class GameCommand implements CommandExecutor {
                     "/tc info --- tc情報を表示\n" +
                     "/tc summon --- 取り立て屋（村人）を召喚\n" +
                     "/tc spawnpoint --- スポーン地点を設定\n" +
+                    "/tc time <int> --- ゲーム時間を設定\n" +
                     "/tc traitor <int> --- traitorの人数設定\n" +
                     "/tc rulebook <name> --- ルールブックの配布");
 
@@ -78,13 +80,44 @@ public class GameCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("spawnpoint")) {
             //スポーン地点設定
             if (sender instanceof Player) {
-                plugin.setSpawnPoint(((Player) sender).getLocation().getBlock().getLocation());
+                Location location = ((Player) sender).getLocation().getBlock().getLocation();
+                plugin.setSpawnPoint(location);
                 plugin.reloadInfo();
+                //プレイヤー全員テレポート
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.teleport(location);
+                }
                 sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "スポーン地点を更新しました");
 
             } else {
                 sender.sendMessage(ChatColor.GRAY + "このコマンドはPlayerのみ実行できます");
             }
+
+        } else if (args[0].equalsIgnoreCase("time")) {
+            //ゲーム時間設定
+            int num;
+            if (args.length == 2) {
+                if (args[1].equalsIgnoreCase("+5")) {
+                    //5分足す
+                    num = plugin.getTime() + 5;
+                } else if (args[1].equalsIgnoreCase("-5")) {
+                    //5分減らす
+                    if (plugin.getTime() <= 5) { return true;}
+                    num = plugin.getTime() - 5;
+                } else {
+                    //指定の時間にする
+                    try {
+                        num = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+            plugin.setTime(num);
+            plugin.reloadInfo();
+            sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲーム時間を変更しました");
 
         } else if (args[0].equalsIgnoreCase("traitor")) {
             //裏切者の人数を設定する
@@ -112,7 +145,7 @@ public class GameCommand implements CommandExecutor {
             }
             plugin.setTraitorNum(num);
             plugin.reloadInfo();
-            sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "traitorの人数を更新しました");
+            sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "traitorの人数を変更しました");
 
         } else if (args[0].equalsIgnoreCase("rulebook")) {
             //ルールブックの配布

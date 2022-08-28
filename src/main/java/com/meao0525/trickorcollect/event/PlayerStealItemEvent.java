@@ -6,6 +6,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -40,6 +41,7 @@ public class PlayerStealItemEvent implements Listener {
             //クールダウン中
             if (player.getCooldown(itemInMain.getType()) > 0) {
                 sendActionBarMessage(player, ChatColor.GRAY + "クールダウン中です");
+                player.playSound(player, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.5f, 0.5f);
                 return;
             }
 
@@ -55,6 +57,7 @@ public class PlayerStealItemEvent implements Listener {
                     //ターゲットから投票されている
                     if (isVoted(player, ptarget)) {
                         sendActionBarMessage(player, ChatColor.RED + "投票されているため盗めません");
+                        player.playSound(player, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.5f, 0.5f);
                         return;
                     }
                     targetInv = ptarget.getInventory();
@@ -72,6 +75,7 @@ public class PlayerStealItemEvent implements Listener {
                 //追放されているか
                 if (pluin.getExiled().contains(player)) {
                     sendActionBarMessage(player, ChatColor.RED + "追放されているため盗めません");
+                    player.playSound(player, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.5f, 0.5f);
                     return;
                 }
                 //盗む処理
@@ -112,6 +116,7 @@ public class PlayerStealItemEvent implements Listener {
 
         if (items.isEmpty()) {
             sendActionBarMessage(player, ChatColor.GRAY + "チッ...文無しか...");
+            player.playSound(player, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.5f, 0.5f);
             return;
         }
 
@@ -121,11 +126,12 @@ public class PlayerStealItemEvent implements Listener {
         //盗む処理
         item = items.get(0);
         int index = targetInv.first(item);
-        int amount = item.getAmount() / 10 + 1;
+        int amount = item.getAmount();
 
         //盗んだ方に渡す
         player.getInventory().addItem(new ItemStack(item.getType(), amount));
         player.sendMessage(ChatColor.AQUA + "アイテムを盗みました！");
+        player.playSound(player, Sound.ENTITY_ARROW_SHOOT, 0.5f, 0.5f);
         //targetの餅数減らす
         targetInv.getItem(index).setAmount(item.getAmount() - amount);
     }

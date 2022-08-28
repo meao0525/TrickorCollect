@@ -1,5 +1,5 @@
 name: TrickorCollect
-version: '1.0-SNAPSHOT'
+version: '1.0'
 main: com.meao0525.trickorcollect.TrickorCollect
 api-version: 1.17
 authors: [ meao0525 ]

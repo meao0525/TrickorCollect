@@ -14,6 +14,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.ScoreboardManager;
@@ -141,11 +143,17 @@ public class PlayerVoteEvent implements Listener {
                     exiled.add(votedPlayer);
                     //メッセージ
                     Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " が追放されたぞ～！");
+                    //エフェクトかける
+                    votedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, plugin.getTime() * 60 * 20, 1, false, false, true));
+                    votedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, plugin.getTime() * 60 * 20, 1, false, false, true));
                 } else if (num < border && exiled.contains(votedPlayer)) {
                     //過半数割っており、追放リストにいたら削除
                     exiled.remove(votedPlayer);
                     //メッセージ
                     Bukkit.broadcastMessage(votedPlayer.getDisplayName() + " の追放が解除された");
+                    //エフェクト消す
+                    votedPlayer.removePotionEffect(PotionEffectType.SLOW);
+                    votedPlayer.removePotionEffect(PotionEffectType.WEAKNESS);
                 }
             }
         }

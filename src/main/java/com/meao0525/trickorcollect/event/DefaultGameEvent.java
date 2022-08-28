@@ -4,12 +4,14 @@ import com.meao0525.trickorcollect.TrickorCollect;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -65,6 +67,19 @@ public class DefaultGameEvent implements Listener {
             Villager villager = (Villager) e.getEntity();
             if (villager.getName().equalsIgnoreCase("取り立て屋")) {
                 //取り立て屋は不死身です
+                e.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void PlayerDamageEventListener(EntityDamageByEntityEvent e) {
+        //ダメージを受けたのはプレイヤーですか？
+        if (plugin.isGame() && (e.getEntity() instanceof Player)) {
+            //spawnpointから3m以内では敵に襲われない(ただしプレイヤー同士は殴りあえる)
+            Entity entity = e.getEntity();
+            double distance = entity.getLocation().distance(plugin.getSpawnPoint());
+            if (distance < 3 && !(e.getDamager() instanceof Player)) {
                 e.setCancelled(true);
             }
         }

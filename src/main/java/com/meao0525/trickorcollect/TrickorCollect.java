@@ -3,6 +3,7 @@ package com.meao0525.trickorcollect;
 import com.meao0525.trickorcollect.command.CommandTabCompleter;
 import com.meao0525.trickorcollect.command.GameCommand;
 import com.meao0525.trickorcollect.event.*;
+import com.meao0525.trickorcollect.item.AdminBook;
 import com.meao0525.trickorcollect.item.GameItems;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
@@ -74,7 +75,6 @@ public final class TrickorCollect extends JavaPlugin {
      * 座標シャッフル
      */
 
-    //TODO: 取り立て屋の周りを安全にする
 
     @Override
     public void onEnable() {
@@ -145,7 +145,7 @@ public final class TrickorCollect extends JavaPlugin {
         //追放者リスト空にする
         exiled.clear();
 
-        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームを開始します");
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "Game Start!");
         //イベント登録
         registerEvents();
         //タイマースタート
@@ -156,6 +156,8 @@ public final class TrickorCollect extends JavaPlugin {
     public void stop() {
         // 終える
         game = false;
+        //結果表示
+        result();
         //取り立て屋のインベントリを戻す
         for (int i=0; i<27; i++) {
             ItemStack item = collectItems.get(i);
@@ -184,14 +186,20 @@ public final class TrickorCollect extends JavaPlugin {
             p.setScoreboard(info);
             //タイマー非表示
             timerBar.removePlayer(p);
+            //アドベンチャーモードにする
+            p.setGameMode(GameMode.ADVENTURE);
             //エフェクト
-            p.sendTitle("", ChatColor.GOLD + "--- 終了---", 0, 60, 20);
+            p.sendTitle("", ChatColor.GOLD + "--- finish ---", 0, 60, 20);
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.3F, 0.5F);
+            //OPだったら管理者ブック + クリエ
+            if (p.isOp()) {
+                p.getInventory().addItem(new AdminBook().toItemStack());
+                p.setGameMode(GameMode.CREATIVE);
+            }
         }
         //ピースフルにする
         Bukkit.getWorlds().get(0).setDifficulty(Difficulty.PEACEFUL);
 
-        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームが終わりました");
         //プレイヤーリストを空にする
         tcPlayers.clear();
     }
@@ -251,16 +259,19 @@ public final class TrickorCollect extends JavaPlugin {
         for (Player p : tcPlayers) {
             //初期地点を設定する
             p.setBedSpawnLocation(spawnPoint, true);
+            //ゲームモード
+            p.setGameMode(GameMode.SURVIVAL);
+            String msg;
             //チーム振り分け
             if (tcount > 0) {
                 //まだ裏切者を作れる
                 traitorTeam.addEntry(p.getDisplayName());
-                p.sendMessage(ChatColor.DARK_RED + "あなたはtraitorになりました...w");
+                msg = ChatColor.DARK_RED + "あなたはtraitorになりました...";
                 tcount--;
             } else {
                 //残りは集める人
                 collectorTeam.addEntry(p.getDisplayName());
-                p.sendMessage(ChatColor.AQUA + "あなたはcollectorになりました");
+                msg = ChatColor.AQUA + "あなたはcollectorになりました";
             }
             //インベントリ
             setGameInventory(p);
@@ -274,7 +285,8 @@ public final class TrickorCollect extends JavaPlugin {
             //タイマー表示
             timerBar.addPlayer(p);
             //合図は大事
-            p.sendTitle("", ChatColor.GOLD + "--- start! ---", 10, 70, 20);
+            p.sendMessage(msg);
+            p.sendTitle("", msg, 10, 120, 20);
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_SHOOT, 3.0F, 3.0F);
         }
     }
@@ -344,7 +356,9 @@ public final class TrickorCollect extends JavaPlugin {
         Score score = obj.getScore("Traitor: " + ChatColor.AQUA + traitorNum);
         score.setScore(i--);
         score = obj.getScore("Spawn: " + ChatColor.AQUA + spawnPoint.getBlockX() + " " + spawnPoint.getBlockY() + " " + spawnPoint.getBlockZ());
-
+        score.setScore(i--);
+        score = obj.getScore("Time: " + ChatColor.AQUA + time);
+        score.setScore(i);
     }
 
     public void registerTeam(Scoreboard board) {
@@ -363,6 +377,37 @@ public final class TrickorCollect extends JavaPlugin {
             traitorTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
             traitorTeam.setAllowFriendlyFire(true);
             traitorTeam.setColor(ChatColor.WHITE);
+        }
+    }
+
+    //結果表示
+    public void result() {
+        Bukkit.broadcastMessage(ChatColor.GOLD + "==========[ Result ]===========");
+        //アイテムのリザルト表示
+        for (int i = 0; i < collectItems.size(); i++) {
+            ItemStack item = collectItems.get(i);
+            //バリアは飛ばす
+            if (item.getType().equals(Material.BARRIER)) { continue; }
+
+            String name = item.getType().name(); //アイテム名
+            int max; //必要な数
+            int result; //集めた数
+
+            max = item.getAmount();
+            if (collects.getItem(i) == null) {
+                result = 0;
+            } else {
+                result = collects.getItem(i).getAmount();
+            }
+            //表示 (アイテム名 --- ◯ / ◯)
+            Bukkit.broadcastMessage(ChatColor.AQUA + name + ChatColor.RESET + " --- " + result + " / " + max);
+        }
+
+        //人狼の正体
+        Bukkit.broadcastMessage(ChatColor.GOLD + "==========[ Traitors ]===========");
+        for (String name : traitorTeam.getEntries()) {
+            //表示
+            Bukkit.broadcastMessage(ChatColor.DARK_RED + name + ChatColor.RESET + ", ");
         }
     }
 
@@ -441,6 +486,14 @@ public final class TrickorCollect extends JavaPlugin {
 
     public HashMap<Player, ArrayList<Player>> getVoteMap() {
         return voteMap;
+    }
+
+    public int getTime() {
+        return time;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
     }
 
     //タイマー用内部クラス

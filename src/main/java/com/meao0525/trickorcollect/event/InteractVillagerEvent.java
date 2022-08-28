@@ -2,8 +2,7 @@ package com.meao0525.trickorcollect.event;
 
 import com.meao0525.trickorcollect.TrickorCollect;
 import com.meao0525.trickorcollect.item.GameItems;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -44,13 +43,18 @@ public class InteractVillagerEvent implements Listener {
             //目標アイテム取得
             ArrayList<ItemStack> collectItems = plugin.getCollectItems();
             //手に持ってるアイテムが目標アイテムか
-
             for (int i=0; i<collectItems.size(); i++) {
                 if (inMainHand.getType().equals(collectItems.get(i).getType())) {
+                    //集め終わってるなら飛ばす
+                    ItemStack item = plugin.getCollects().getItem(i);
+                    if (item != null && item.getEnchantmentLevel(Enchantment.BINDING_CURSE) == 255) { continue; }
                     //納品アイテム持ってたら回収
                     int dif = collectItem(i, collectItems.get(i).getAmount(), inMainHand);
                     //回収しまーす
                     player.getInventory().getItemInMainHand().setAmount(dif);
+                    //納品エフェクト
+                    plugin.getCollector().playEffect(EntityEffect.VILLAGER_HAPPY);
+                    plugin.getCollector().getWorld().playSound(plugin.getSpawnPoint(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.5f, 0.5f);
                     //ゲーム終わったかな？？？？
                     check();
                     return;
@@ -92,6 +96,9 @@ public class InteractVillagerEvent implements Listener {
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             complete.setItemMeta(meta);
             collects.setItem(index, complete);
+            //完了通知
+            String msg = ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + complete.getType().name() + " を集め終わりました";
+            Bukkit.broadcastMessage(msg);
             //差分を返す
             return currentAmount + newAmount - max;
         } else {

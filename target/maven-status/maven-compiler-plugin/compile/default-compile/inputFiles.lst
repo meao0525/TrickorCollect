@@ -1,10 +1,12 @@
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\event\InteractVillagerEvent.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\event\DefaultGameEvent.java
+D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\event\PlayerVoteEvent.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\event\PlayerRespawnEvent.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\command\CommandTabCompleter.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\event\PlayerGameChatEvent.java
-D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\event\PlayerJoinEvent.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\event\PlayerStealItemEvent.java
+D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\item\AdminBook.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\TrickorCollect.java
+D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\item\RuleBook.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\item\GameItems.java
 D:\Users\Meao\IdeaProjects\TrickorCollect\src\main\java\com\meao0525\trickorcollect\command\GameCommand.java
