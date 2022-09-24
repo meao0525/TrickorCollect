@@ -1,0 +1,27 @@
+name: upload README.md
+
+on:
+  push:
+    branches: [ "main" ]
+env:
+  post_id: 265
+  
+jobs:
+  update_wp_post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: install pip markdown
+        run: |
+          pip install markdown2
+      - name: convert md 2 markdown
+        id: makeHTML
+        run: |
+          text=$(python3 -m markdown2 ./README.md)
+          echo "::set-output name=contentHTML::$(echo $text)"
+          echo $text
+      - name: post
+        run: |
+         curl -X POST --user ${{ secrets.WP_USER }}:${{ secrets.WP_APP_PW }} -H "Content-Type: application/json" -d '{ "content":"${{ steps.makeHTML.outputs.contentHTML }}", "status" : "Public" }' https://meao0525.net/wp-json/wp/v2/posts/${{env.post_id}}
