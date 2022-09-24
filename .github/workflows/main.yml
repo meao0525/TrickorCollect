@@ -6,7 +6,7 @@ on:
   push:
     branches: [ "main" ]
 env:
-  post_id: 55
+  post_id: 265
   
 jobs:
   update_wp_post:
