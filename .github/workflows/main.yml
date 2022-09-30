@@ -24,4 +24,4 @@ jobs:
           echo $text
       - name: post
         run: |
-         curl -X POST --user ${{ secrets.WP_USER }}:${{ secrets.WP_APP_PW }} -H "Content-Type: application/json" -d '{ "content":"${{ steps.makeHTML.outputs.contentHTML }}", "status" : "Public" }' https://meao0525.net/wp-json/wp/v2/posts/${{env.post_id}}
+         curl -X POST --user ${{ secrets.WP_USER }}:${{ secrets.WP_APP_PW }} -H "Content-Type: application/json" -d '{ "content":"${{ steps.makeHTML.outputs.contentHTML }}", "status" : "Publish" }' https://meao0525.net/wp-json/wp/v2/posts/${{env.post_id}}
