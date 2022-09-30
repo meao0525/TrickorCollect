@@ -19,7 +19,7 @@ jobs:
       - name: convert md 2 markdown
         id: makeHTML
         run: |
-          text=$(python3 -m markdown2 ./README.md)
+          text=$(python3 -m markdown2 ./README.md | sed -e 's/"/\\"/g')
           echo "::set-output name=contentHTML::$(echo $text)"
           echo $text
       - name: post
