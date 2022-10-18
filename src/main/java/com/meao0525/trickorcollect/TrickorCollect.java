@@ -3,10 +3,12 @@ package com.meao0525.trickorcollect;
 import com.meao0525.trickorcollect.command.CommandTabCompleter;
 import com.meao0525.trickorcollect.command.GameCommand;
 import com.meao0525.trickorcollect.event.*;
+import com.meao0525.trickorcollect.event.gameevent.GameEvent;
+import com.meao0525.trickorcollect.event.gameevent.HatCarvedPumpkinGameEvent;
+import com.meao0525.trickorcollect.event.gameevent.ShufflePositionGameEvent;
+import com.meao0525.trickorcollect.gameevent.GameEventID;
 import com.meao0525.trickorcollect.item.AdminBook;
-import com.meao0525.trickorcollect.item.GameItems;
 import org.bukkit.*;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -22,12 +24,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
-import org.checkerframework.checker.units.qual.A;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public final class TrickorCollect extends JavaPlugin {
     // ゲームフラグ
@@ -149,7 +147,7 @@ public final class TrickorCollect extends JavaPlugin {
         //イベント登録
         registerEvents();
         //タイマースタート
-        timer = new GameTimer(time);
+        timer = new GameTimer(this, time);
         timer.runTaskTimer(this, 0, 20);
     }
 
@@ -499,10 +497,14 @@ public final class TrickorCollect extends JavaPlugin {
     //タイマー用内部クラス
     private class GameTimer extends BukkitRunnable {
 
+        private TrickorCollect plugin;
         private int time;
         private double maxTime;
 
-        GameTimer(int time) {
+
+
+        GameTimer(TrickorCollect plugin, int time) {
+            this.plugin = plugin;
             this.maxTime = time * 60;
             this.time = time * 60;
         }
@@ -524,12 +526,40 @@ public final class TrickorCollect extends JavaPlugin {
                         p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_PLACE, 0.3F, 0.5F);
                     }
                 }
+                //ゲーム内イベント発生
+                if (time/maxTime == 0.5) {
+                    createGameEvent();
+                }
             } else {
                 //ゲーム終了
                 stop();
             }
             //1秒減らす
             time--;
+        }
+
+        //ゲーム内イベント発生！
+        public void createGameEvent() {
+            //乱数生成
+            GameEventID gameEventID = GameEventID.getRandomGameEvent();
+            //イベント分岐
+            GameEvent gameEvent;
+            switch (gameEventID) {
+                case SHUFFLE_POSITION:
+                    //ランダムに座標を入れ替える
+                    gameEvent = new ShufflePositionGameEvent(plugin);
+                    break;
+
+                case HAT_CARVED_PUMPKIN:
+                    //かぼちゃを頭にかぶせる（脱げない）
+                    gameEvent = new HatCarvedPumpkinGameEvent(plugin);
+                    break;
+
+                default:
+                    return;
+            }
+            //イベント登録
+            getServer().getPluginManager().registerEvents(gameEvent, plugin);
         }
     }
 }
