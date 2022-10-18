@@ -110,9 +110,9 @@ ___
 
 ### ゲーム設定情報
 管理者ブック2ページ目の[情報を表示]をクリックすると、サイドバーにゲーム設定情報が表示されます。  
-* Traitor: traitorの人数  
-* Spawn: ゲームのスポーン地点  
-* Time: 制限時間（分）  
+ ・ Traitor: traitorの人数  
+ ・ Spawn: ゲームのスポーン地点  
+ ・ Time: 制限時間（分）  
 
 ![2022-09-17_11 37 31](https://user-images.githubusercontent.com/50980996/190844172-662307d7-86f3-47b3-b499-d7bb7262b621.png)
 
