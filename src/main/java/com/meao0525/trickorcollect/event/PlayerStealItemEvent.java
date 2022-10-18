@@ -50,6 +50,7 @@ public class PlayerStealItemEvent implements Listener {
                 //クリックされたのだ～れ
                 Inventory targetInv;
                 int invsize;
+                int cooldownTicks;
                 if (e.getRightClicked() instanceof Player) {
                     Player ptarget = (Player)e.getRightClicked();
                     //ゲーム参加者か？
@@ -62,12 +63,16 @@ public class PlayerStealItemEvent implements Listener {
                     }
                     targetInv = ptarget.getInventory();
                     invsize = 9;
+                    //クールダウン
+                    cooldownTicks = 600;
                 } else if(e.getRightClicked() instanceof Villager) {
                     //取り立て屋さん？
                     Villager vtarget = (Villager) e.getRightClicked();
                     if (vtarget.getCustomName() == null || !vtarget.getCustomName().equalsIgnoreCase("取り立て屋"))  { return; }
                     targetInv = pluin.getCollects();
                     invsize = 27;
+                    //クールダウン
+                    cooldownTicks = 2400;
                 } else {
                     //それ以外は何もしない
                     return;
@@ -81,7 +86,7 @@ public class PlayerStealItemEvent implements Listener {
                 //盗む処理
                 stealItem(player, targetInv, invsize);
                 //クールダウン
-                player.setCooldown(itemInMain.getType(), 600);
+                player.setCooldown(itemInMain.getType(), cooldownTicks);
             }
         }
     }
@@ -102,7 +107,7 @@ public class PlayerStealItemEvent implements Listener {
         ItemStack item;
         for (int i=0; i<invsize; i++) {
             item = targetInv.getItem(i);
-            if (item != null && item.getEnchantmentLevel(Enchantment.BINDING_CURSE) != 255) {
+            if (item != null) {
                 items.add(item);
             }
         }
