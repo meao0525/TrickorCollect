@@ -3,8 +3,7 @@ package com.meao0525.trickorcollect.gameevent;
 import java.util.Random;
 
 public enum GameEventID {
-    SHUFFLE_POSITION,
-    HAT_CARVED_PUMPKIN;
+    SHUFFLE_POSITION;
 
     //ランダムなIDを返す
     public static GameEventID getRandomGameEvent() {

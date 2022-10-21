@@ -4,7 +4,6 @@ import com.meao0525.trickorcollect.command.CommandTabCompleter;
 import com.meao0525.trickorcollect.command.GameCommand;
 import com.meao0525.trickorcollect.event.*;
 import com.meao0525.trickorcollect.event.gameevent.GameEvent;
-import com.meao0525.trickorcollect.event.gameevent.HatCarvedPumpkinGameEvent;
 import com.meao0525.trickorcollect.event.gameevent.ShufflePositionGameEvent;
 import com.meao0525.trickorcollect.gameevent.GameEventID;
 import com.meao0525.trickorcollect.item.AdminBook;
@@ -50,6 +49,9 @@ public final class TrickorCollect extends JavaPlugin {
     private int time = 20; //分
     GameTimer timer;
     private BossBar timerBar;
+
+    //ゲーム内イベントフラグ
+    private boolean gameEvent = false;
 
     //スコアボード
     private ScoreboardManager manager;
@@ -527,7 +529,7 @@ public final class TrickorCollect extends JavaPlugin {
                     }
                 }
                 //ゲーム内イベント発生
-                if (time/maxTime == 0.5) {
+                if (gameEvent && time/maxTime == 0.5) {
                     createGameEvent();
                 }
             } else {
@@ -548,11 +550,6 @@ public final class TrickorCollect extends JavaPlugin {
                 case SHUFFLE_POSITION:
                     //ランダムに座標を入れ替える
                     gameEvent = new ShufflePositionGameEvent(plugin);
-                    break;
-
-                case HAT_CARVED_PUMPKIN:
-                    //かぼちゃを頭にかぶせる（脱げない）
-                    gameEvent = new HatCarvedPumpkinGameEvent(plugin);
                     break;
 
                 default:
