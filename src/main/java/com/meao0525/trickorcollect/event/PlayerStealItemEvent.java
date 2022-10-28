@@ -134,7 +134,11 @@ public class PlayerStealItemEvent implements Listener {
         int amount = item.getAmount();
 
         //盗んだ方に渡す
-        player.getInventory().addItem(new ItemStack(item.getType(), amount));
+        HashMap<Integer, ItemStack> overs = player.getInventory().addItem(new ItemStack(item.getType(), amount));
+        //持てなかった分を吐き出す
+        for (ItemStack over : overs.values()) {
+            player.getWorld().dropItem(player.getLocation(), over);
+        }
         player.sendMessage(ChatColor.AQUA + "アイテムを盗みました！");
         player.playSound(player, Sound.ENTITY_ARROW_SHOOT, 0.5f, 0.5f);
         //targetの餅数減らす
