@@ -4,6 +4,7 @@ import com.meao0525.trickorcollect.command.CommandTabCompleter;
 import com.meao0525.trickorcollect.command.GameCommand;
 import com.meao0525.trickorcollect.event.*;
 import com.meao0525.trickorcollect.event.gameevent.GameEvent;
+import com.meao0525.trickorcollect.event.gameevent.RaidBattleGameEvent;
 import com.meao0525.trickorcollect.event.gameevent.ShuffleInventoryGameEvent;
 import com.meao0525.trickorcollect.event.gameevent.ShufflePositionGameEvent;
 import com.meao0525.trickorcollect.gameevent.GameEventID;
@@ -52,7 +53,7 @@ public final class TrickorCollect extends JavaPlugin {
     private BossBar timerBar;
 
     //ゲーム内イベントフラグ
-    private boolean gameEventFlag = false;
+    private boolean gameEventFlag = true;
 
     //スコアボード
     private ScoreboardManager manager;
@@ -550,23 +551,24 @@ public final class TrickorCollect extends JavaPlugin {
             //イベント分岐
             GameEvent gameEvent;
             switch (gameEventID) {
-                case SHUFFLE_POSITION:
-                    //ランダムに座標を入れ替える
-                    gameEvent = new ShufflePositionGameEvent(plugin);
-                    break;
-
-                case SHUFFLE_INVENTORY:
-                    //ランダムにインベントリを入れ替える
-                    gameEvent = new ShuffleInventoryGameEvent(plugin);
-                    break;
+//                case SHUFFLE_POSITION:
+//                    //ランダムに座標を入れ替える
+//                    gameEvent = new ShufflePositionGameEvent(plugin);
+//                    break;
+//
+//                case SHUFFLE_INVENTORY:
+//                    //ランダムにインベントリを入れ替える
+//                    gameEvent = new ShuffleInventoryGameEvent(plugin);
+//                    break;
 
                 case RAID_BATTLE:
                     //襲撃者バトル
-//                    gameEvent = new ShufflePositionGameEvent(plugin);
+                    gameEvent = new RaidBattleGameEvent(plugin);
                     break;
 
                 default:
-                    return;
+                    gameEvent = new RaidBattleGameEvent(plugin);
+                    break;
             }
             //イベント登録
             getServer().getPluginManager().registerEvents(gameEvent, plugin);
