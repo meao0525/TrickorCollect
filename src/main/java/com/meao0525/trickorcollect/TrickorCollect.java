@@ -4,6 +4,7 @@ import com.meao0525.trickorcollect.command.CommandTabCompleter;
 import com.meao0525.trickorcollect.command.GameCommand;
 import com.meao0525.trickorcollect.event.*;
 import com.meao0525.trickorcollect.event.gameevent.GameEvent;
+import com.meao0525.trickorcollect.event.gameevent.ShuffleInventoryGameEvent;
 import com.meao0525.trickorcollect.event.gameevent.ShufflePositionGameEvent;
 import com.meao0525.trickorcollect.gameevent.GameEventID;
 import com.meao0525.trickorcollect.item.AdminBook;
@@ -51,7 +52,7 @@ public final class TrickorCollect extends JavaPlugin {
     private BossBar timerBar;
 
     //ゲーム内イベントフラグ
-    private boolean gameEvent = false;
+    private boolean gameEventFlag = false;
 
     //スコアボード
     private ScoreboardManager manager;
@@ -66,14 +67,6 @@ public final class TrickorCollect extends JavaPlugin {
     private HashMap<Player, ArrayList<Player>> voteMap = new HashMap<>();
     //追放者リスト
     private ArrayList<Player> exiled = new ArrayList<>();
-
-    //TODO: ゲーム内イベントありかも
-    /*
-     * ウーパールーパー捕まえたらエフェクトたくさん
-     * 取り立て屋の周りに襲撃者
-     * インベントリシャッフル
-     * 座標シャッフル
-     */
 
 
     @Override
@@ -502,7 +495,7 @@ public final class TrickorCollect extends JavaPlugin {
         private TrickorCollect plugin;
         private int time;
         private double maxTime;
-
+        private GameEvent gameEvent;
 
 
         GameTimer(TrickorCollect plugin, int time) {
@@ -529,7 +522,7 @@ public final class TrickorCollect extends JavaPlugin {
                     }
                 }
                 //ゲーム内イベント発生
-                if (gameEvent && time/maxTime == 0.5) {
+                if (gameEventFlag && time/maxTime == 0.5) {
                     createGameEvent();
                 }
             } else {
@@ -538,6 +531,16 @@ public final class TrickorCollect extends JavaPlugin {
             }
             //1秒減らす
             time--;
+        }
+
+        @Override
+        public synchronized void cancel() throws IllegalStateException {
+            //ゲーム内イベントキャンセル
+            if (gameEvent != null) {
+                gameEvent.cancel();
+            }
+            //タイマーキャンセル
+            super.cancel();
         }
 
         //ゲーム内イベント発生！
@@ -550,6 +553,16 @@ public final class TrickorCollect extends JavaPlugin {
                 case SHUFFLE_POSITION:
                     //ランダムに座標を入れ替える
                     gameEvent = new ShufflePositionGameEvent(plugin);
+                    break;
+
+                case SHUFFLE_INVENTORY:
+                    //ランダムにインベントリを入れ替える
+                    gameEvent = new ShuffleInventoryGameEvent(plugin);
+                    break;
+
+                case RAID_BATTLE:
+                    //襲撃者バトル
+//                    gameEvent = new ShufflePositionGameEvent(plugin);
                     break;
 
                 default:

@@ -27,4 +27,9 @@ public class ShufflePositionGameEvent extends GameEvent {
             player.teleport(positions.get(i++));
         }
     }
+
+    @Override
+    public void cancel() {
+        //キャンセル処理なし
+    }
 }

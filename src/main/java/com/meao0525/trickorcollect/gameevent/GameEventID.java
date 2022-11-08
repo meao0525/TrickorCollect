@@ -3,7 +3,9 @@ package com.meao0525.trickorcollect.gameevent;
 import java.util.Random;
 
 public enum GameEventID {
-    SHUFFLE_POSITION;
+    SHUFFLE_POSITION,
+    SHUFFLE_INVENTORY,
+    RAID_BATTLE;
 
     //ランダムなIDを返す
     public static GameEventID getRandomGameEvent() {
