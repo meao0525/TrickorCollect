@@ -30,7 +30,8 @@ public class AdminBook {
             {"-traitor - 1\n\n", "/tc traitor -1"},
             {"-ルールブックを配布\n\n", "/tc rulebook"},
             {"-ゲーム時間 + 5分\n\n", "/tc time +5"},
-            {"-ゲーム時間 - 5分\n\n", "/tc time -5"}};
+            {"-ゲーム時間 - 5分\n\n", "/tc time -5"},
+            {"-ゲーム内イベント有/無\n\n", "/tc gameevent"}};
 
     public ItemStack toItemStack() {
         //本の生成

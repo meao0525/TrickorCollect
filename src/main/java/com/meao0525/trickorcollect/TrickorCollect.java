@@ -349,9 +349,14 @@ public final class TrickorCollect extends JavaPlugin {
         //Traitorの数
         Score score = obj.getScore("Traitor: " + ChatColor.AQUA + traitorNum);
         score.setScore(i--);
+        //スポーン地点
         score = obj.getScore("Spawn: " + ChatColor.AQUA + spawnPoint.getBlockX() + " " + spawnPoint.getBlockY() + " " + spawnPoint.getBlockZ());
         score.setScore(i--);
+        //制限時間
         score = obj.getScore("Time: " + ChatColor.AQUA + time);
+        score.setScore(i);
+        //ゲーム内イベント
+        score = obj.getScore("Event: " + ChatColor.AQUA + gameEventFlag);
         score.setScore(i);
     }
 
@@ -490,6 +495,15 @@ public final class TrickorCollect extends JavaPlugin {
         this.time = time;
     }
 
+    public void setGameEventFlag(boolean gameEventFlag) {
+        this.gameEventFlag = gameEventFlag;
+        reloadInfo();
+    }
+
+    public boolean isGameEventFlag() {
+        return gameEventFlag;
+    }
+
     //タイマー用内部クラス
     private class GameTimer extends BukkitRunnable {
 
@@ -551,15 +565,15 @@ public final class TrickorCollect extends JavaPlugin {
             //イベント分岐
             GameEvent gameEvent;
             switch (gameEventID) {
-//                case SHUFFLE_POSITION:
-//                    //ランダムに座標を入れ替える
-//                    gameEvent = new ShufflePositionGameEvent(plugin);
-//                    break;
-//
-//                case SHUFFLE_INVENTORY:
-//                    //ランダムにインベントリを入れ替える
-//                    gameEvent = new ShuffleInventoryGameEvent(plugin);
-//                    break;
+                case SHUFFLE_POSITION:
+                    //ランダムに座標を入れ替える
+                    gameEvent = new ShufflePositionGameEvent(plugin);
+                    break;
+
+                case SHUFFLE_INVENTORY:
+                    //ランダムにインベントリを入れ替える
+                    gameEvent = new ShuffleInventoryGameEvent(plugin);
+                    break;
 
                 case RAID_BATTLE:
                     //襲撃者バトル

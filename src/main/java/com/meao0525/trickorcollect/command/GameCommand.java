@@ -38,7 +38,8 @@ public class GameCommand implements CommandExecutor {
                     "/tc spawnpoint --- スポーン地点を設定\n" +
                     "/tc time <int> --- ゲーム時間を設定\n" +
                     "/tc traitor <int> --- traitorの人数設定\n" +
-                    "/tc rulebook <name> --- ルールブックの配布");
+                    "/tc rulebook <name> --- ルールブックの配布\n" +
+                    "/tc gameevent <boolean> --- ゲーム内イベントの設定");
 
         } else if (args[0].equalsIgnoreCase("start")) {
             //ゲーム開始コマンド
@@ -171,6 +172,24 @@ public class GameCommand implements CommandExecutor {
                 } else {
                     return false;
                 }
+            } else {
+                sender.sendMessage(ChatColor.GRAY + "ゲーム中は使えません");
+            }
+        } else if (args[0].equalsIgnoreCase("gameevent")) {
+            //ゲームイベント設定
+            if (!plugin.isGame()) {
+                boolean gameEventFlag;
+                if (args.length == 1) {
+                    //toggleで切り替え
+                    gameEventFlag = !plugin.isGameEventFlag();
+                } else if (args.length == 2) {
+                    //引数で指定する
+                    gameEventFlag = Boolean.parseBoolean(args[1]);
+                } else {
+                    return false;
+                }
+                plugin.setGameEventFlag(gameEventFlag);
+                sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームイベント設定を変更しました");
             } else {
                 sender.sendMessage(ChatColor.GRAY + "ゲーム中は使えません");
             }

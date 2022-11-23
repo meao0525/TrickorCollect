@@ -14,7 +14,7 @@ public class CommandTabCompleter implements TabCompleter {
         //タブでコマンド保管
         if (args.length == 1) { //第1引数
             if (args[0].length() == 0) {
-                return Arrays.asList("help", "start", "stop", "info", "summon", "spawnpoint", "time", "traitor", "rulebook");
+                return Arrays.asList("help", "start", "stop", "info", "summon", "spawnpoint", "time", "traitor", "rulebook", "gameevent");
             }
         }
         //デフォルトコンプリーター
