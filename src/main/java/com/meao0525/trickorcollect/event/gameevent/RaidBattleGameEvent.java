@@ -19,7 +19,7 @@ public class RaidBattleGameEvent extends GameEvent {
     public RaidBattleGameEvent(TrickorCollect plugin) {
         super(plugin);
         //ログ
-        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Treat!]" + ChatColor.RESET + "襲撃イベント発生！！！");
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "襲撃イベント発生！！！");
         Bukkit.broadcastMessage(ChatColor.GRAY + "リスポーン地点の周りに襲撃者が現れた！");
         for (Player player : plugin.getTcPlayers()) {
             //効果音

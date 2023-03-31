@@ -1,6 +1,7 @@
 package com.meao0525.trickorcollect.command;
 
 import com.meao0525.trickorcollect.TrickorCollect;
+import com.meao0525.trickorcollect.gameevent.GameEventID;
 import com.meao0525.trickorcollect.item.AdminBook;
 import com.meao0525.trickorcollect.item.RuleBook;
 import org.bukkit.Bukkit;
@@ -39,7 +40,8 @@ public class GameCommand implements CommandExecutor {
                     "/tc time <int> --- ゲーム時間を設定\n" +
                     "/tc traitor <int> --- traitorの人数設定\n" +
                     "/tc rulebook <name> --- ルールブックの配布\n" +
-                    "/tc gameevent <boolean> --- ゲーム内イベントの設定");
+                    "/tc gameevent <boolean> --- ゲーム内イベントの設定\n" +
+                    "/tc mode <mode> --- モードの設定");
 
         } else if (args[0].equalsIgnoreCase("start")) {
             //ゲーム開始コマンド
@@ -192,6 +194,22 @@ public class GameCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ゲームイベント設定を変更しました");
             } else {
                 sender.sendMessage(ChatColor.GRAY + "ゲーム中は使えません");
+            }
+        } else if (args[0].equalsIgnoreCase("mode")) {
+            //モードの設定
+            if (!plugin.isGame()) {
+                if (args.length == 2) {
+                    for (GameEventID id : GameEventID.values()) {
+                        if (args[1].equals(id.getMode())) {
+                            plugin.setMode(id.getMode());
+                            sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "モードを変更しました");
+                            return true;
+                        }
+                    }
+                    sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + args[1] + " というモードは存在しません");
+                } else {
+                    return false;
+                }
             }
         }
         return true;

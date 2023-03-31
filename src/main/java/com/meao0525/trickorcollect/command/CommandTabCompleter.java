@@ -13,8 +13,10 @@ public class CommandTabCompleter implements TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         //タブでコマンド保管
         if (args.length == 1) { //第1引数
-            if (args[0].length() == 0) {
-                return Arrays.asList("help", "start", "stop", "info", "summon", "spawnpoint", "time", "traitor", "rulebook", "gameevent");
+            return Arrays.asList("help", "start", "stop", "info", "summon", "spawnpoint", "time", "traitor", "rulebook", "gameevent", "mode");
+        } else if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("mode")) {
+                return Arrays.asList("default", "aprilfool");
             }
         }
         //デフォルトコンプリーター

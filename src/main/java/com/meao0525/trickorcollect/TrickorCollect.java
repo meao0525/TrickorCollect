@@ -3,10 +3,8 @@ package com.meao0525.trickorcollect;
 import com.meao0525.trickorcollect.command.CommandTabCompleter;
 import com.meao0525.trickorcollect.command.GameCommand;
 import com.meao0525.trickorcollect.event.*;
+import com.meao0525.trickorcollect.event.gameevent.*;
 import com.meao0525.trickorcollect.event.gameevent.GameEvent;
-import com.meao0525.trickorcollect.event.gameevent.RaidBattleGameEvent;
-import com.meao0525.trickorcollect.event.gameevent.ShuffleInventoryGameEvent;
-import com.meao0525.trickorcollect.event.gameevent.ShufflePositionGameEvent;
 import com.meao0525.trickorcollect.gameevent.GameEventID;
 import com.meao0525.trickorcollect.item.AdminBook;
 import org.bukkit.*;
@@ -68,6 +66,9 @@ public final class TrickorCollect extends JavaPlugin {
     private HashMap<Player, ArrayList<Player>> voteMap = new HashMap<>();
     //追放者リスト
     private ArrayList<Player> exiled = new ArrayList<>();
+
+    //モード
+    private String mode = "default";
 
 
     @Override
@@ -504,6 +505,14 @@ public final class TrickorCollect extends JavaPlugin {
         return gameEventFlag;
     }
 
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
     //タイマー用内部クラス
     private class GameTimer extends BukkitRunnable {
 
@@ -561,9 +570,8 @@ public final class TrickorCollect extends JavaPlugin {
         //ゲーム内イベント発生！
         public void createGameEvent() {
             //乱数生成
-            GameEventID gameEventID = GameEventID.getRandomGameEvent();
+            GameEventID gameEventID = GameEventID.getRandomGameEvent(mode);
             //イベント分岐
-            GameEvent gameEvent;
             switch (gameEventID) {
                 case SHUFFLE_POSITION:
                     //ランダムに座標を入れ替える
@@ -580,8 +588,9 @@ public final class TrickorCollect extends JavaPlugin {
                     gameEvent = new RaidBattleGameEvent(plugin);
                     break;
 
-                default:
-                    gameEvent = new RaidBattleGameEvent(plugin);
+                case BLOCK_LIE:
+                    //ブロックが嘘つき始める(Aprilfool)
+                    gameEvent = new AprilBlockLieGameEvent(plugin);
                     break;
             }
             //イベント登録
