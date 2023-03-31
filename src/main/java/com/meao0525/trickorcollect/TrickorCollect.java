@@ -570,7 +570,12 @@ public final class TrickorCollect extends JavaPlugin {
         //ゲーム内イベント発生！
         public void createGameEvent() {
             //乱数生成
-            GameEventID gameEventID = GameEventID.getRandomGameEvent(mode);
+            GameEventID gameEventID;
+            if (mode.equalsIgnoreCase("default")) {
+                gameEventID = GameEventID.getRandomGameEvent();
+            } else {
+                gameEventID = GameEventID.getRandomGameEvent(mode);
+            }
             //イベント分岐
             switch (gameEventID) {
                 case SHUFFLE_POSITION:

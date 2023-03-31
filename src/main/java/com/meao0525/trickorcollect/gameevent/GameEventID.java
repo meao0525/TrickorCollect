@@ -1,6 +1,7 @@
 package com.meao0525.trickorcollect.gameevent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public enum GameEventID {
@@ -21,7 +22,18 @@ public enum GameEventID {
         return mode;
     }
 
-    //ランダムなIDを返す
+    //全てのイベントのうちランダムなIDを返す
+    public static GameEventID getRandomGameEvent() {
+        //全GameEventID取得
+        ArrayList<GameEventID> gameEventIDList = new ArrayList<>(Arrays.asList(GameEventID.values()));
+        //乱数生成
+        Random random = new Random();
+        int randomNum = random.nextInt(gameEventIDList.size());
+
+        return gameEventIDList.get(randomNum);
+    }
+
+    //指定モードのイベントのうちランダムなIDを返す
     public static GameEventID getRandomGameEvent(String mode) {
         //全GameEventID取得
         ArrayList<GameEventID> gameEventIDList = new ArrayList<>();
