@@ -40,6 +40,11 @@ public class InteractVillagerEvent implements Listener {
                 player.sendMessage(ChatColor.RED + "追放されているためアクション出来ません");
                 return;
             }
+            // 盗む所作
+            if (plugin.getTraitorTeam().hasEntry(player.getDisplayName())
+                && inMainHand.getType().equals(Material.IRON_SWORD)) {
+                return;
+            }
             //目標アイテム取得
             ArrayList<ItemStack> collectItems = plugin.getCollectItems();
             //手に持ってるアイテムが目標アイテムか

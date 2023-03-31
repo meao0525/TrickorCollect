@@ -7,9 +7,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -22,22 +19,22 @@ import java.util.*;
 
 public class PlayerStealItemEvent implements Listener {
 
-    private TrickorCollect pluin;
+    private TrickorCollect plugin;
 
-    public PlayerStealItemEvent(TrickorCollect pluin) {
-        this.pluin = pluin;
+    public PlayerStealItemEvent(TrickorCollect plugin) {
+        this.plugin = plugin;
     }
 
     @EventHandler
     public void PlayerStealItemEventListener(PlayerInteractEntityEvent e) {
         //ゲームっちゅうっすか？
-        if (pluin.isGame()) {
+        if (plugin.isGame()) {
             //それぞれ取得
             Player player = e.getPlayer();
             ItemStack itemInMain = player.getInventory().getItemInMainHand();
 
             //人狼チームか
-            if (!pluin.getTraitorTeam().hasEntry(player.getDisplayName())) { return; }
+            if (!plugin.getTraitorTeam().hasEntry(player.getDisplayName())) { return; }
             //クールダウン中
             if (player.getCooldown(itemInMain.getType()) > 0) {
                 sendActionBarMessage(player, ChatColor.GRAY + "クールダウン中です");
@@ -54,7 +51,7 @@ public class PlayerStealItemEvent implements Listener {
                 if (e.getRightClicked() instanceof Player) {
                     Player ptarget = (Player)e.getRightClicked();
                     //ゲーム参加者か？
-                    if (!pluin.getTcPlayers().contains(ptarget)) { return; }
+                    if (!plugin.getTcPlayers().contains(ptarget)) { return; }
                     //ターゲットから投票されている
                     if (isVoted(player, ptarget)) {
                         sendActionBarMessage(player, ChatColor.RED + "投票されているため盗めません");
@@ -69,7 +66,7 @@ public class PlayerStealItemEvent implements Listener {
                     //取り立て屋さん？
                     Villager vtarget = (Villager) e.getRightClicked();
                     if (vtarget.getCustomName() == null || !vtarget.getCustomName().equalsIgnoreCase("取り立て屋"))  { return; }
-                    targetInv = pluin.getCollects();
+                    targetInv = plugin.getCollects();
                     invsize = 27;
                     //クールダウン
                     cooldownTicks = 2400;
@@ -78,7 +75,7 @@ public class PlayerStealItemEvent implements Listener {
                     return;
                 }
                 //追放されているか
-                if (pluin.getExiled().contains(player)) {
+                if (plugin.getExiled().contains(player)) {
                     sendActionBarMessage(player, ChatColor.RED + "追放されているため盗めません");
                     player.playSound(player, Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 0.5f, 0.5f);
                     return;
@@ -92,7 +89,7 @@ public class PlayerStealItemEvent implements Listener {
     }
 
     public boolean isVoted(Player player, Player target) {
-        HashMap<Player, ArrayList<Player>> voteMap = pluin.getVoteMap();
+        HashMap<Player, ArrayList<Player>> voteMap = plugin.getVoteMap();
         //ターゲットから投票されている
         if (voteMap.containsKey(target) && voteMap.get(target).contains(player)) {
             return true;
