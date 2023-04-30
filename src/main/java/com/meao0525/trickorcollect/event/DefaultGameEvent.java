@@ -5,7 +5,6 @@ import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -20,8 +19,8 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.spigotmc.event.entity.EntityMountEvent;
 
-import java.util.HashSet;
 import java.util.Random;
 
 public class DefaultGameEvent implements Listener {
@@ -54,7 +53,7 @@ public class DefaultGameEvent implements Listener {
         }
 
         //目標インベントリもダメ
-        if (e.getView().getTopInventory().getHolder().equals(plugin.getCollector())) {
+        if (e.getView().getTopInventory().getHolder().equals(plugin.getCollectMaster())) {
             //上に目標アイテム
             e.setCancelled(true);
         }
@@ -132,10 +131,20 @@ public class DefaultGameEvent implements Listener {
             inv.setItem(i+9, item);
         }
         player.sendMessage("リスポーン");
-        if (!player.getWorld().getGameRuleValue(GameRule.KEEP_INVENTORY)) {
+        if (Boolean.FALSE.equals(player.getWorld().getGameRuleValue(GameRule.KEEP_INVENTORY))) {
             //ランダムにツール１つと食べ物をあげる
             inv.addItem(getRandomTool());
             inv.addItem(new ItemStack(Material.COOKED_COD, 64));
+        }
+    }
+
+    @EventHandler
+    public void CollectMasterMountEventLister(EntityMountEvent e) {
+        //取り立て屋が乗ろうとした
+        String entityName = e.getEntity().getCustomName();
+        if (entityName != null && entityName.equalsIgnoreCase("取り立て屋")) {
+            // 取り立て屋は何も乗らない
+            e.setCancelled(true);
         }
     }
 

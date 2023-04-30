@@ -1,7 +1,6 @@
 package com.meao0525.trickorcollect.event;
 
 import com.meao0525.trickorcollect.TrickorCollect;
-import com.meao0525.trickorcollect.item.GameItems;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -9,7 +8,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -58,8 +56,8 @@ public class InteractVillagerEvent implements Listener {
                     //回収しまーす
                     player.getInventory().getItemInMainHand().setAmount(dif);
                     //納品エフェクト
-                    plugin.getCollector().playEffect(EntityEffect.VILLAGER_HAPPY);
-                    plugin.getCollector().getWorld().playSound(plugin.getSpawnPoint(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.5f, 0.5f);
+                    plugin.getCollectMaster().playEffect(EntityEffect.VILLAGER_HAPPY);
+                    plugin.getCollectMaster().getWorld().playSound(plugin.getSpawnPoint(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 0.5f, 0.5f);
                     //ゲーム終わったかな？？？？
                     check();
                     return;

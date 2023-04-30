@@ -11,7 +11,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.units.qual.A;
 
 public class GameCommand implements CommandExecutor {
 
@@ -46,7 +45,7 @@ public class GameCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("start")) {
             //ゲーム開始コマンド
             if (!plugin.isGame()) {
-                if (plugin.getCollector() != null) {
+                if (plugin.getCollectMaster() != null) {
                     if (!plugin.getCollects().isEmpty()) {
                         plugin.start();
                     } else {
@@ -84,12 +83,13 @@ public class GameCommand implements CommandExecutor {
             //スポーン地点設定
             if (sender instanceof Player) {
                 Location location = ((Player) sender).getLocation().getBlock().getLocation();
-                plugin.setSpawnPoint(location);
-                plugin.reloadInfo();
                 //プレイヤー全員テレポート
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.teleport(location);
+                    player.setBedSpawnLocation(location, true);
                 }
+                plugin.setSpawnPoint(location);
+                plugin.reloadInfo();
                 sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "スポーン地点を更新しました");
 
             } else {

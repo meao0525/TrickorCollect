@@ -35,7 +35,7 @@ public final class TrickorCollect extends JavaPlugin {
     //人狼人数
     private int traitorNum = 1;
     //取り立て屋
-    Villager collector;
+    Villager collectMaster;
 
     // 初期地点
     private Location spawnPoint;
@@ -83,6 +83,8 @@ public final class TrickorCollect extends JavaPlugin {
         spawnPoint = Bukkit.getWorlds().get(0).getSpawnLocation();
         spawnPoint.setX(spawnPoint.getX() + 0.5);
         spawnPoint.setZ(spawnPoint.getZ() + 0.5);
+        //初期化用
+        collects = Bukkit.createInventory(null, 27, "目標アイテム");
         //タイマーバー作成
         timerBar = Bukkit.createBossBar("残り時間:", BarColor.GREEN, BarStyle.SOLID);
         //スコアボード設定
@@ -98,8 +100,8 @@ public final class TrickorCollect extends JavaPlugin {
     @Override
     public void onDisable() {
         // 停止時
-        if (collector != null) {
-            collector.remove();
+        if (collectMaster != null) {
+            collectMaster.remove();
         }
     }
 
@@ -134,9 +136,11 @@ public final class TrickorCollect extends JavaPlugin {
         //取り立て屋のインベントリを空にする
         collects.clear();
         //光らせる
-        collector.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
+        collectMaster.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, time*60*20, 1, true, false));
         //ノーマルモードにする
-        Bukkit.getWorlds().get(0).setDifficulty(Difficulty.NORMAL);
+        collectMaster.getWorld().setDifficulty(Difficulty.NORMAL);
+        //昼にする(noon)
+        collectMaster.getWorld().setTime(6000);
         //追放者リスト空にする
         exiled.clear();
 
@@ -163,7 +167,7 @@ public final class TrickorCollect extends JavaPlugin {
         //保存用リストを空にする
         collectItems.clear();
         //光を消す
-        collector.removePotionEffect(PotionEffectType.GLOWING);
+        collectMaster.removePotionEffect(PotionEffectType.GLOWING);
         itemCount = 0;
         //タイマー止める
         timer.cancel();
@@ -201,7 +205,7 @@ public final class TrickorCollect extends JavaPlugin {
 
     //取り立て屋（村人）作る
     public void summonCollector() {
-        if (collector == null) {
+        if (collectMaster == null) {
             /* 村人の作り方 */
             World world = spawnPoint.getWorld();
             if (world == null) {
@@ -213,18 +217,24 @@ public final class TrickorCollect extends JavaPlugin {
             spawnPoint.getBlock().setType(Material.DIAMOND_BLOCK);
             spawnPoint.add(0, 0.1, 0);
             //今回の取り立て屋
-            collector = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
-            collector.setAI(false);
-            collector.setCustomName("取り立て屋");
-            collector.setCustomNameVisible(true);
+            collectMaster = (Villager) world.spawnEntity(spawnPoint, EntityType.VILLAGER);
+            collectMaster.setAI(false);
+            collectMaster.setCustomName("取り立て屋");
+            collectMaster.setCustomNameVisible(true);
             //インベントリを与える
-            collects = Bukkit.createInventory(collector, 27, "目標アイテム");
+            ItemStack[] contents = collects.getContents();
+            collects = Bukkit.createInventory(collectMaster, 27, "目標アイテム");
+            collects.setContents(contents);
             //音
             world.playSound(spawnPoint, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 0.5f);
         } else {
             //toggleで消す
-            collector.remove();
-            collector = null;
+            collectMaster.remove();
+            collectMaster = null;
+            //足元のブロック
+            spawnPoint.add(0, -0.1, 0);
+            spawnPoint.getBlock().setType(Material.AIR);
+            spawnPoint.add(0, 0.1, 0);
         }
     }
 
@@ -426,21 +436,26 @@ public final class TrickorCollect extends JavaPlugin {
     }
 
     public void setSpawnPoint(Location spawnPoint) {
+        //足元ブロック消す
+        this.spawnPoint.add(0, -0.1, 0);
+        this.spawnPoint.getBlock().setType(Material.AIR);
+        this.spawnPoint.add(0, 0.1, 0);
+        //新リスポーン
         this.spawnPoint = spawnPoint;
         this.spawnPoint.setX(spawnPoint.getBlockX() + 0.5);
         this.spawnPoint.setZ(spawnPoint.getBlockZ() + 0.5);
-        if (collector != null) {
+        if (collectMaster != null) {
             //足元のブロック
             spawnPoint.add(0, -0.1, 0);
             spawnPoint.getBlock().setType(Material.DIAMOND_BLOCK);
             spawnPoint.add(0, 0.1, 0);
-            collector.teleport(spawnPoint);
+            collectMaster.teleport(spawnPoint);
         }
         reloadInfo();
     }
 
-    public Villager getCollector() {
-        return collector;
+    public Villager getCollectMaster() {
+        return collectMaster;
     }
 
     public Inventory getCollects() {
