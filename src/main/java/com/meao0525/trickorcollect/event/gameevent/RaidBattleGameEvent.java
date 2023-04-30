@@ -26,10 +26,10 @@ public class RaidBattleGameEvent extends GameEvent {
             player.playSound(player, Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1.0f, 0.1f);
         }
 
-        /* スポーン数はプレイヤー*8体
+        /* スポーン数はプレイヤー*4体(上限20体)
          * ただし、5人につき1体ラヴェジャーを1体召喚
          * 例: プレイヤー5人の場合
-         *   ピリジャー 32体　ラヴェジャー 1体
+         *   ピリジャー 16体　ラヴェジャー 1体
          */
         //プレイヤー人数
         int playerNum = plugin.getTcPlayers().size();
@@ -38,7 +38,11 @@ public class RaidBattleGameEvent extends GameEvent {
         //プレイヤーを5人ごとに1人減らす
         playerNum -= playerNum / 5;
         //ピリジャーの数
-        int spawnNum = playerNum * 8;
+        int spawnNum = playerNum * 4;
+        //とはいえ上限
+        if (spawnNum > 25) {
+            spawnNum = 25;
+        }
 
         //初期地点取得
         Location spawnPoint = plugin.getSpawnPoint();
