@@ -294,6 +294,19 @@ public final class TrickorCollect extends JavaPlugin {
             p.sendTitle("", msg, 10, 120, 20);
             p.playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_SHOOT, 3.0F, 3.0F);
         }
+
+        //人狼メッセージ
+        Set<String> traitors = traitorTeam.getEntries();
+        if (traitors.size() > 1) {
+            for (String entry : traitors) {
+                Player player = Bukkit.getPlayer(entry);
+                if (player != null) {
+                    player.sendMessage(ChatColor.GRAY + "↓ 今回の人狼 ↓");
+                    player.sendMessage(ChatColor.GRAY + String.valueOf(traitors));
+                }
+            }
+        }
+
     }
 
     //ゲーム開始時のインベントリ作るやつ
