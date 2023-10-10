@@ -210,6 +210,8 @@ public class GameCommand implements CommandExecutor {
                 } else {
                     return false;
                 }
+            } else {
+                sender.sendMessage(ChatColor.GRAY + "ゲーム中は使えません");
             }
         }
         return true;

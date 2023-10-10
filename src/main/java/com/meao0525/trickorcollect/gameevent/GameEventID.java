@@ -40,8 +40,16 @@ public enum GameEventID {
         for (GameEventID id : GameEventID.values()) {
             if (id.getMode().equals(mode)) {
                 gameEventIDList.add(id);
+            } else if (id.getMode().equals("default") && mode.equals("aprilfool")) {
+                //エイプリルフールモードではdefaultも対象とする
+                gameEventIDList.add(id);
             }
         }
+        //不正なmode
+        if (gameEventIDList.size() == 0) {
+            return null;
+        }
+
         //乱数生成
         Random random = new Random();
         int randomNum = random.nextInt(gameEventIDList.size());
