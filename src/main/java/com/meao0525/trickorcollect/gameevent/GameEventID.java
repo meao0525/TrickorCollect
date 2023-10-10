@@ -10,7 +10,12 @@ public enum GameEventID {
     SHUFFLE_INVENTORY("default"),
     RAID_BATTLE("default"),
     //--- aprilfool ---
-    BLOCK_LIE("aprilfool");
+    BLOCK_LIE("aprilfool"),
+    //--- Halloween ---
+    HAT_CARVED_PUMPKIN("halloween"),
+    ZOMBIE_PARTY("halloween"),
+    PUMPKIN_PARTY("halloween"),
+    ;
 
     private String mode;
 

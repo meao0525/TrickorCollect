@@ -5,6 +5,7 @@ import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -12,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -21,6 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.spigotmc.event.entity.EntityMountEvent;
 
+import java.util.List;
 import java.util.Random;
 
 public class DefaultGameEvent implements Listener {
@@ -134,7 +137,13 @@ public class DefaultGameEvent implements Listener {
         if (Boolean.FALSE.equals(player.getWorld().getGameRuleValue(GameRule.KEEP_INVENTORY))) {
             //ランダムにツール１つと食べ物をあげる
             inv.addItem(getRandomTool());
-            inv.addItem(new ItemStack(Material.COOKED_COD, 64));
+            if (plugin.getMode().equals("halloween")) {
+                //ハロウィンモードではクッキー
+                inv.addItem(new ItemStack(Material.COOKIE, 64));
+            } else {
+                inv.addItem(new ItemStack(Material.COOKED_COD, 64));
+            }
+
         }
     }
 
@@ -146,6 +155,31 @@ public class DefaultGameEvent implements Listener {
             // 取り立て屋は何も乗らない
             e.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void MonsterDropJackEventListener(EntityDeathEvent e) {
+        //ハロウィンモード限定(ゲーム開始時からドロップするようにしたいのでここで)
+        if (!plugin.getMode().equals("halloween")) { return; }
+
+        //ゾンビ、スケルトン、クリーパー、ハスク、ドラウンド、ウィッチ、エンダーマン、ピリジャー
+        if (e.getEntityType().equals(EntityType.ZOMBIE)
+                || e.getEntityType().equals(EntityType.SKELETON)
+                || e.getEntityType().equals(EntityType.CREEPER)
+                || e.getEntityType().equals(EntityType.HUSK)
+                || e.getEntityType().equals(EntityType.DROWNED)
+                || e.getEntityType().equals(EntityType.WITCH)
+                || e.getEntityType().equals(EntityType.ENDERMAN)
+                || e.getEntityType().equals(EntityType.PILLAGER)) {
+            //30%の確率でジャックオランタンを落とす
+            int random = new Random().nextInt(10);
+            if (random < 3) {
+                List<ItemStack> drops = e.getDrops();
+                drops.clear();
+                drops.add(new ItemStack(Material.JACK_O_LANTERN));
+            }
+        }
+
     }
 
     public ItemStack getRandomTool() {

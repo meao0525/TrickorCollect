@@ -336,7 +336,12 @@ public final class TrickorCollect extends JavaPlugin {
         tools.add(new ItemStack(Material.IRON_AXE));
         tools.add(new ItemStack(Material.IRON_SHOVEL));
         //食い物やるよ
-        tools.add(new ItemStack(Material.COOKED_COD, 64));
+        if (mode.equals("halloween")) {
+            //ハロウィンモードではクッキー
+            tools.add(new ItemStack(Material.COOKIE, 64));
+        } else {
+            tools.add(new ItemStack(Material.COOKED_COD, 64));
+        }
 
         return tools;
     }
@@ -625,6 +630,24 @@ public final class TrickorCollect extends JavaPlugin {
                     //ブロックが嘘つき始める(Aprilfool)
                     gameEvent = new AprilBlockLieGameEvent(plugin);
                     break;
+
+                case HAT_CARVED_PUMPKIN:
+                    //かぼちゃを頭にかぶせる（脱げない）
+                    gameEvent = new HatCarvedPumpkinGameEvent(plugin);
+                    break;
+
+                case ZOMBIE_PARTY:
+                    //仮装パーティー（ゾンビ大量発生）
+                    gameEvent = new ZombiePartyGameEvent(plugin);
+                    break;
+
+                case PUMPKIN_PARTY:
+                    //特製パンプキンパイ
+                    gameEvent = new PumpkinPartyGameEvent(plugin);
+                    break;
+
+                default:
+                    return;
             }
             //イベント登録
             getServer().getPluginManager().registerEvents(gameEvent, plugin);

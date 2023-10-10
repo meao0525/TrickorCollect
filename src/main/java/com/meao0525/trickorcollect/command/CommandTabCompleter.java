@@ -16,7 +16,7 @@ public class CommandTabCompleter implements TabCompleter {
             return Arrays.asList("help", "start", "stop", "info", "summon", "spawnpoint", "time", "traitor", "rulebook", "gameevent", "mode");
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("mode")) {
-                return Arrays.asList("default", "aprilfool");
+                return Arrays.asList("default", "aprilfool", "halloween");
             }
         }
         //デフォルトコンプリーター
