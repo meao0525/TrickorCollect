@@ -30,7 +30,7 @@ public class ZombiePartyGameEvent extends GameEvent implements Listener {
         //ログ
         Bukkit.broadcastMessage(ChatColor.GOLD + "[Trick or Treat!]" + ChatColor.RESET + "仮装パーティーの始まりだ...！");
         Bukkit.broadcastMessage(ChatColor.GRAY + "リスポーン地点の周りにゾンビの仮装集団が現れた！");
-        Bukkit.broadcastMessage(ChatColor.GRAY + "どうやらあいつら "+ ChatColor.AQUA + "お菓子" + " をあげないとイタズラしてくるらしい...");
+        Bukkit.broadcastMessage(ChatColor.GRAY + "どうやらあいつら "+ ChatColor.AQUA + "お菓子" + ChatColor.GRAY + " をあげないとイタズラしてくるらしい...");
         for (Player player : plugin.getTcPlayers()) {
             //効果音
             player.playSound(player, Sound.ENTITY_ZOMBIE_HURT, 1.0f, 0.5f);
