@@ -8,6 +8,9 @@ import com.meao0525.trickorcollect.event.gameevent.GameEvent;
 import com.meao0525.trickorcollect.gameevent.GameEventID;
 import com.meao0525.trickorcollect.item.AdminBook;
 import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Container;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -18,6 +21,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -25,6 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 
 import java.util.*;
+import java.util.Map.*;
 
 public final class TrickorCollect extends JavaPlugin {
     // ゲームフラグ
@@ -57,6 +62,7 @@ public final class TrickorCollect extends JavaPlugin {
     private ScoreboardManager manager;
     private Scoreboard info; //設定用
     private boolean infoFlag = false;
+    private Scoreboard eachScore; //プレイヤーごとのスコア
 
     //チーム
     private Team collectorTeam;
@@ -70,6 +76,8 @@ public final class TrickorCollect extends JavaPlugin {
     //モード
     private String mode = "default";
 
+    //ルール
+    private String rule = "default";
 
     @Override
     public void onEnable() {
@@ -90,6 +98,7 @@ public final class TrickorCollect extends JavaPlugin {
         //スコアボード設定
         manager = Bukkit.getScoreboardManager();
         info = manager.getNewScoreboard();
+        eachScore = manager.getNewScoreboard();
         reloadInfo();
         //チーム登録
         registerTeam(manager.getMainScoreboard());
@@ -108,6 +117,9 @@ public final class TrickorCollect extends JavaPlugin {
     public void registerEvents() {
         HandlerList.unregisterAll(this);
         getServer().getPluginManager().registerEvents(new DefaultGameEvent(this), this);
+        if (rule.equals("collectEach")) {
+            getServer().getPluginManager().registerEvents(new CollectInChestEvent(this), this);
+        }
         getServer().getPluginManager().registerEvents(new InteractVillagerEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnEvent(this), this);
         getServer().getPluginManager().registerEvents(new PlayerStealItemEvent(this), this);
@@ -236,6 +248,19 @@ public final class TrickorCollect extends JavaPlugin {
             spawnPoint.getBlock().setType(Material.AIR);
             spawnPoint.add(0, 0.1, 0);
         }
+    }
+
+    //プレイヤー納品チェスト作る
+    public void setPlayerChest(Player player, Container chest) {
+        //座標取得
+        Location location = chest.getLocation();
+        //チェスト下を岩盤にする
+        location.add(0, -0.1, 0);
+        location.getBlock().setType(Material.BEDROCK);
+        location.add(0, 0.1, 0);
+        //プレイヤーのMetaに登録
+        player.removeMetadata("collectChest", this);
+        player.setMetadata("collectChest", new FixedMetadataValue(this, chest));
     }
 
     //収集アイテム保存するやつ
@@ -411,24 +436,46 @@ public final class TrickorCollect extends JavaPlugin {
     //結果表示
     public void result() {
         Bukkit.broadcastMessage(ChatColor.GOLD + "==========[ Result ]===========");
-        //アイテムのリザルト表示
-        for (int i = 0; i < collectItems.size(); i++) {
-            ItemStack item = collectItems.get(i);
-            //バリアは飛ばす
-            if (item.getType().equals(Material.BARRIER)) { continue; }
-
-            String name = item.getType().name(); //アイテム名
-            int max; //必要な数
-            int result; //集めた数
-
-            max = item.getAmount();
-            if (collects.getItem(i) == null) {
-                result = 0;
-            } else {
-                result = collects.getItem(i).getAmount();
+        if (rule.equals("collectEach")) {
+            //プレイヤーごとに集めた種類のリザルト表示
+            HashMap<Player, Integer> resultMap = new HashMap<>();
+            for (Player player : tcPlayers) {
+                //スコア(集めた種類数)取得
+                Objective obj = manager.getMainScoreboard().getObjective("eachScore");
+                if (obj != null) {
+                    int score = obj.getScore(player.getDisplayName()).getScore();
+                    //resultMapに登録
+                    resultMap.put(player, score);
+                }
             }
-            //表示 (アイテム名 --- ◯ / ◯)
-            Bukkit.broadcastMessage(ChatColor.AQUA + name + ChatColor.RESET + " --- " + result + " / " + max);
+            //スコア順にソート
+            List<Entry<Player, Integer>> list = new ArrayList<>(resultMap.entrySet());
+            list.sort(Entry.comparingByValue());
+            //表示 (プレイヤー名 --- ◯)
+            for (Entry<Player, Integer> entry : list) {
+                Bukkit.broadcastMessage(ChatColor.AQUA + entry.getKey().getDisplayName() +
+                        ChatColor.RESET + " --- " + entry.getValue() + " / " + itemCount);
+            }
+        } else {
+            //アイテムのリザルト表示
+            for (int i = 0; i < collectItems.size(); i++) {
+                ItemStack item = collectItems.get(i);
+                //バリアは飛ばす
+                if (item.getType().equals(Material.BARRIER)) { continue; }
+
+                String name = item.getType().name(); //アイテム名
+                int max; //必要な数
+                int result; //集めた数
+
+                max = item.getAmount();
+                if (collects.getItem(i) == null) {
+                    result = 0;
+                } else {
+                    result = collects.getItem(i).getAmount();
+                }
+                //表示 (アイテム名 --- ◯ / ◯)
+                Bukkit.broadcastMessage(ChatColor.AQUA + name + ChatColor.RESET + " --- " + result + " / " + max);
+            }
         }
 
         //人狼の正体
@@ -544,6 +591,14 @@ public final class TrickorCollect extends JavaPlugin {
 
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    public String getRule() {
+        return rule;
+    }
+
+    public void setRule(String rule) {
+        this.rule = rule;
     }
 
     //タイマー用内部クラス

@@ -7,6 +7,8 @@ import com.meao0525.trickorcollect.item.RuleBook;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -40,7 +42,8 @@ public class GameCommand implements CommandExecutor {
                     "/tc traitor <int> --- traitorの人数設定\n" +
                     "/tc rulebook <name> --- ルールブックの配布\n" +
                     "/tc gameevent <boolean> --- ゲーム内イベントの設定\n" +
-                    "/tc mode <mode> --- モードの設定");
+                    "/tc mode <mode> --- モードの設定\n" +
+                    "/tc rule <rule> --- ルールの設定");
 
         } else if (args[0].equalsIgnoreCase("start")) {
             //ゲーム開始コマンド
@@ -74,7 +77,34 @@ public class GameCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("summon")) {
             //取り立て屋（村人）を召喚
             if (!plugin.isGame()) {
-                plugin.summonCollector();
+                if (args.length == 1) {
+                    plugin.summonCollector();
+                } else {
+                    if (sender instanceof Player) {
+                        //プレイヤー取得
+                        Player player = Bukkit.getPlayer(args[1]);
+                        if (player != null) {
+                            //座標取得
+                            Block target = ((Player)sender).getTargetBlockExact(5);
+                            if (target != null && target.getState() instanceof Chest) {
+                                Chest chest = (Chest) target.getState();
+                                if (chest.getInventory().getSize() > 27) {
+                                    sender.sendMessage(ChatColor.GRAY + "シングルチェストのみ指定できます");
+                                } else {
+                                    //チェスト作成
+                                    plugin.setPlayerChest(player, chest);
+                                    sender.sendMessage(ChatColor.GOLD + "[Trick or Collect] " + ChatColor.RESET + player.getDisplayName() + " のチェストを作成しました");
+                                }
+                            } else {
+                                sender.sendMessage(ChatColor.GRAY + "チェストにカーソルを合わせて実行してください");
+                            }
+                        } else {
+                            sender.sendMessage(ChatColor.GRAY + args[1] + " というプレイヤーはいません。");
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.GRAY + "このコマンドはPlayerのみ実行できます");
+                    }
+                }
             } else {
                 sender.sendMessage(ChatColor.GRAY + "ゲーム中は使えません");
             }
@@ -205,6 +235,22 @@ public class GameCommand implements CommandExecutor {
                             sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "モードを変更しました");
                             return true;
                         }
+                    }
+                    sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + args[1] + " というモードは存在しません");
+                } else {
+                    return false;
+                }
+            } else {
+                sender.sendMessage(ChatColor.GRAY + "ゲーム中は使えません");
+            }
+        } else if (args[0].equalsIgnoreCase("rule")) {
+            //モードの設定
+            if (!plugin.isGame()) {
+                if (args.length == 2) {
+                    if (args[1].equals("default") || args[1].equals("collectEach")) {
+                        plugin.setRule(args[1]);
+                        sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + "ルールを " + plugin.getRule() + " に変更しました");
+                        return true;
                     }
                     sender.sendMessage(ChatColor.GOLD + "[Trick or Collect]" + ChatColor.RESET + args[1] + " というモードは存在しません");
                 } else {

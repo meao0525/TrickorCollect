@@ -33,6 +33,11 @@ public class InteractVillagerEvent implements Listener {
         ItemStack inMainHand = player.getInventory().getItemInMainHand();
         //ゲーム中か
         if (plugin.isGame()) {
+            //それぞれ集めなさい
+            if (plugin.getRule().equals("collectEach")) {
+                player.sendMessage(ChatColor.GRAY + "自信の納品先チェストに入れてください");
+                return;
+            }
             //追放されているか
             if (plugin.getExiled().contains(player)) {
                 player.sendMessage(ChatColor.RED + "追放されているためアクション出来ません");

@@ -2,6 +2,7 @@ package com.meao0525.trickorcollect.event;
 
 import com.meao0525.trickorcollect.TrickorCollect;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -29,6 +30,11 @@ public class PlayerRespawnEvent implements Listener {
         }
 
         Player player = e.getPlayer();
+
+        //参加者のみ
+        if (player.getGameMode().equals(GameMode.SPECTATOR)) {
+            return;
+        }
 
         if (!player.isSneaking()) {
             //スニークしたとき

@@ -4,6 +4,7 @@ import com.meao0525.trickorcollect.TrickorCollect;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -37,6 +38,14 @@ public class DefaultGameEvent implements Listener {
     @EventHandler
     public void InventoryHoldItemEventLitener(InventoryClickEvent e) {
         //インベントリアイテム取れなくする
+        //納品先チェスト
+        for (Chest chest : CollectInChestEvent.getPlayerChests()) {
+            if (e.getView().getTopInventory().equals(chest.getInventory())) {
+                //上に納品先チェスト
+                e.setCancelled(true);
+            }
+        }
+
         if (!plugin.isGame()) {
             return;
         }
