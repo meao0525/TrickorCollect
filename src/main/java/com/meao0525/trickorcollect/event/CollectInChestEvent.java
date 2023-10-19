@@ -103,12 +103,13 @@ public class CollectInChestEvent implements Listener {
             for (int i=0; i<collectItems.size(); i++) {
                 if (inMainHand.getType().equals(collectItems.get(i).getType())) {
                     //集め終わってるなら飛ばす
+                    int max = collectItems.get(i).getAmount();
                     ItemStack item = chest.getInventory().getItem(i);
-                    if (item != null && item.getEnchantmentLevel(Enchantment.BINDING_CURSE) == 255) { continue; }
+                    if (item != null && item.getAmount() == max) { continue; }
                     //デフォのイベントキャンセル
                     e.setCancelled(true);
                     //納品アイテム持ってたら回収
-                    int dif = collectItem(i, collectItems.get(i).getAmount(), inMainHand, chest);
+                    int dif = collectItem(i, max, inMainHand, chest);
                     if (dif >= 0) {
                         //完了通知
                         String msg = ChatColor.GOLD + "[Trick or Collect]" +
@@ -139,13 +140,14 @@ public class CollectInChestEvent implements Listener {
     public int collectItem(int index, int max, ItemStack item, Chest chest) {
         //アイテムを納品する処理
         Inventory collects = chest.getInventory();
+        ItemStack currentItem = collects.getItem(index);
         //現在の納品数、新しい納品数
         int currentAmount, newAmount;
 
         newAmount = item.getAmount();
-        if (collects.contains(item.getType())) {
+        if (currentItem != null && currentItem.getType().equals(item.getType())) {
             //同じアイテムすでに納品済み
-            currentAmount = collects.getItem(index).getAmount();
+            currentAmount = currentItem.getAmount();
         } else {
             //そのアイテムは君が最初の納品者だ
             currentAmount = 0;
