@@ -114,7 +114,7 @@ public class CollectInChestEvent implements Listener {
                         //完了通知
                         String msg = ChatColor.GOLD + "[Trick or Collect]" +
                                 ChatColor.RESET + player.getName() + "が " +
-                                ChatColor.AQUA + inMainHand.toString() +
+                                ChatColor.AQUA + inMainHand.getType().name() +
                                 ChatColor.RESET + " を集め終わりました";
                         Bukkit.broadcastMessage(msg);
                         //スコア更新
