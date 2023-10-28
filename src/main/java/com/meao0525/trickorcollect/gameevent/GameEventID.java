@@ -2,6 +2,7 @@ package com.meao0525.trickorcollect.gameevent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public enum GameEventID {
@@ -60,5 +61,25 @@ public enum GameEventID {
         int randomNum = random.nextInt(gameEventIDList.size());
 
         return gameEventIDList.get(randomNum);
+    }
+
+    //指定モードのイベントのうちランダムなIDを返す
+    public static List<GameEventID> getGameEvents(String mode) {
+        //全GameEventID取得
+        ArrayList<GameEventID> gameEventIDList = new ArrayList<>();
+        for (GameEventID id : GameEventID.values()) {
+            if (id.getMode().equals(mode)) {
+                gameEventIDList.add(id);
+            } else if (id.getMode().equals("default") && mode.equals("aprilfool")) {
+                //エイプリルフールモードではdefaultも対象とする
+                gameEventIDList.add(id);
+            }
+        }
+        //不正なmode
+        if (gameEventIDList.size() == 0) {
+            return null;
+        }
+
+        return gameEventIDList;
     }
 }

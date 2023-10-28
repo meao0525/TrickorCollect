@@ -210,6 +210,8 @@ public final class TrickorCollect extends JavaPlugin {
         }
         //ピースフルにする
         Bukkit.getWorlds().get(0).setDifficulty(Difficulty.PEACEFUL);
+        //昼にする(noon)
+        collectMaster.getWorld().setTime(6000);
 
         //プレイヤーリストを空にする
         tcPlayers.clear();
@@ -607,17 +609,33 @@ public final class TrickorCollect extends JavaPlugin {
         private TrickorCollect plugin;
         private int time;
         private double maxTime;
+        //ゲーム内イベント
         private GameEvent gameEvent;
+
+        /* ---　ゲーム内イベント制御用 ---*/
+        //ゲームイベント発生回数
+        private int eventCount;
+        //ゲームイベントリスト
+        private List<GameEventID> gameEventList;
+        //イベントリストアクセス用(カウントアップ)
+        private int eventListID = 0;
 
 
         GameTimer(TrickorCollect plugin, int time) {
             this.plugin = plugin;
             this.maxTime = time * 60;
             this.time = time * 60;
+            this.eventCount = 2;
+            gameEventList = GameEventID.getGameEvents(mode);
+            if (gameEventList != null) {
+
+            }
         }
 
         @Override
         public void run() {
+            // 1/(eventCount+1) 間隔でゲーム内イベント発生
+            int eventTriggerTime = (int)maxTime / (eventCount + 1);
             if (time > 0) {
                 timerBar.setTitle("残り時間:" + time/60 + "m " + time%60 + "s");
                 timerBar.setProgress(time/maxTime);
@@ -634,7 +652,7 @@ public final class TrickorCollect extends JavaPlugin {
                     }
                 }
                 //ゲーム内イベント発生
-                if (gameEventFlag && time/maxTime == 0.5) {
+                if (gameEventFlag && time % eventTriggerTime == 0 && time != maxTime) {
                     createGameEvent();
                 }
             } else {
@@ -659,10 +677,20 @@ public final class TrickorCollect extends JavaPlugin {
         public void createGameEvent() {
             //ランダムなゲーム内イベント取得
             GameEventID gameEventID;
-            gameEventID = GameEventID.getRandomGameEvent(mode);
-            if (gameEventID == null) {
+//            gameEventID = GameEventID.getRandomGameEvent(mode);
+//            if (gameEventID == null) {
+//                return;
+//            }
+            if (gameEventList == null || gameEventList.size() == 0) {
                 return;
             }
+            if (eventListID % gameEventList.size() == 0) {
+                Collections.shuffle(gameEventList);
+            }
+            //リストから取得
+            gameEventID = gameEventList.get(eventListID % gameEventList.size());
+            //次のイベントへ
+            eventListID++;
 
             //イベント分岐
             switch (gameEventID) {

@@ -8,6 +8,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -68,6 +69,30 @@ public class CollectInChestEvent implements Listener {
             } else {
                 Bukkit.broadcastMessage(player.getDisplayName() + ChatColor.RED + " のチェストの登録に失敗しました...");
             }
+        }
+    }
+
+    @EventHandler
+    public void CantBreakCollectChest(BlockBreakEvent e) {
+        Block block = e.getBlock();
+        Chest chest;
+        //チェスト破壊か
+        if (block.getState() instanceof Chest) {
+            chest = (Chest) block.getState();
+        } else {
+            return;
+        }
+
+        //納品先チェストか
+        if (!playerChestMap.containsValue(chest)) { return; }
+
+        //ゲーム中
+        if (plugin.isGame()) {
+            //破壊できない
+            e.setCancelled(true);
+        } else {
+            //中身ドロップしない
+            chest.getInventory().clear();
         }
     }
 
